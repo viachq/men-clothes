@@ -1,11 +1,22 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
 import type { MenuItem, Category } from '../types';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, TrendingUp, ShoppingCart, DollarSign } from 'lucide-react';
+import Card from '../components/ui/Card';
+import Badge from '../components/ui/Badge';
+import Button from '../components/ui/Button';
+
+interface MenuItemStats {
+  id: number;
+  orders_count: number;
+  total_sold: number;
+  revenue: number;
+}
 
 export default function Menu() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [itemsStats, setItemsStats] = useState<Record<number, MenuItemStats>>({});
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
@@ -15,7 +26,29 @@ export default function Menu() {
   useEffect(() => {
     fetchItems();
     fetchCategories();
+    fetchItemsStats();
   }, []);
+
+  const fetchItemsStats = async () => {
+    try {
+      // Використовуємо top_items з overview для статистики
+      const response = await api.get('/admin/stats/overview');
+      const statsMap: Record<number, MenuItemStats> = {};
+      
+      response.data.top_items.forEach((item: any) => {
+        statsMap[item.id] = {
+          id: item.id,
+          orders_count: item.orders,
+          total_sold: item.sold,
+          revenue: 0, // Можна розрахувати з ціни
+        };
+      });
+      
+      setItemsStats(statsMap);
+    } catch (error) {
+      console.error('Failed to fetch items stats:', error);
+    }
+  };
 
   const fetchItems = async () => {
     try {
@@ -130,24 +163,60 @@ export default function Menu() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => (
-          <div key={item.id} className="bg-white rounded-xl shadow-sm border p-6">
-            {item.image_url && <img src={item.image_url} alt={item.name} className="w-full h-48 object-cover rounded-lg mb-4" />}
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{item.name}</h3>
-            <p className="text-gray-600 text-sm mb-4">{item.description}</p>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-red-600">₴{(item.price / 100).toFixed(2)}</span>
-              <div className="flex gap-2">
-                <button onClick={() => openModal(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
-                  <Edit className="w-5 h-5" />
-                </button>
-                <button onClick={() => handleDelete(item.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          </div>
-          ))}
+          {filteredItems.map((item) => {
+            const stats = itemsStats[item.id];
+            
+            return (
+              <Card key={item.id} padding="none" className="overflow-hidden hover:shadow-xl transition-all">
+                {/* Image */}
+                <div className="relative">
+                  {item.image_url ? (
+                    <img 
+                      src={item.image_url} 
+                      alt={item.name} 
+                      className="w-full h-48 object-cover" 
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-gradient-to-br from-red-400 to-orange-400 flex items-center justify-center">
+                      <span className="text-6xl">🍽️</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{item.name}</h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{item.description}</p>
+                  
+                  {/* Stats */}
+                  {stats && (
+                    <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <div className="text-xs text-gray-500">Замовлень</div>
+                        <div className="text-lg font-bold text-gray-900">{stats.orders_count}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">Продано</div>
+                        <div className="text-lg font-bold text-gray-900">{stats.total_sold}</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-red-600">₴{(item.price / 100).toFixed(2)}</span>
+                    <div className="flex gap-2">
+                      <button onClick={() => openModal(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                        <Edit className="w-5 h-5" />
+                      </button>
+                      <button onClick={() => handleDelete(item.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
 

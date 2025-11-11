@@ -2,13 +2,23 @@ import { useEffect, useState } from 'react';
 import api from '../api/client';
 import type { Stats } from '../types';
 import { DollarSign, ShoppingBag, Star, Clock, Receipt } from 'lucide-react';
+import Card from '../components/ui/Card';
+import OrdersChart from '../components/OrdersChart';
+import RatingsSummary from '../components/RatingsSummary';
+
+interface OrdersData {
+  date: string;
+  orders: number;
+}
 
 export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [ordersData, setOrdersData] = useState<OrdersData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStats();
+    fetchOrdersData();
   }, []);
 
   const fetchStats = async () => {
@@ -19,6 +29,15 @@ export default function Dashboard() {
       console.error('Failed to fetch stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOrdersData = async () => {
+    try {
+      const response = await api.get('/admin/stats/orders-by-day');
+      setOrdersData(response.data);
+    } catch (error) {
+      console.error('Failed to fetch orders data:', error);
     }
   };
 
@@ -64,54 +83,85 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
+    <div className="max-w-7xl mx-auto space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+      </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {cards.map((card) => {
           const Icon = card.icon;
           return (
-            <div key={card.title} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
+            <Card key={card.title} padding="md" className="hover:shadow-lg transition-all hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
-                <div className={`${card.color} p-3 rounded-lg`}>
+                <div className={`${card.color} p-3 rounded-xl shadow-md`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
               </div>
-              <h3 className="text-gray-600 text-sm font-medium mb-1">{card.title}</h3>
+              <h3 className="text-gray-600 text-sm font-semibold mb-1 uppercase tracking-wide">{card.title}</h3>
               <p className="text-3xl font-bold text-gray-900">{card.value}</p>
-            </div>
+            </Card>
           );
         })}
       </div>
 
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Orders Chart */}
+        <Card padding="md">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Замовлення за 7 днів</h2>
+            <p className="text-sm text-gray-500 mt-1">Динаміка замовлень за останній тиждень</p>
+          </div>
+          <OrdersChart data={ordersData} />
+        </Card>
+
+        {/* Ratings Summary */}
+        <div>
+          <RatingsSummary />
+        </div>
+      </div>
+
       {/* Top Items */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Top Menu Items (Most Ordered)</h2>
+      <Card padding="md">
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-gray-900">Топ страви</h2>
+          <p className="text-sm text-gray-500 mt-1">Найпопулярніші страви по кількості замовлень</p>
+        </div>
         {stats?.top_items && stats.top_items.length > 0 ? (
           <div className="space-y-3">
-            {stats.top_items.map((item, index) => (
+            {stats.top_items.map((item, index) => {
+              return (
               <div
                 key={item.id}
-                className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl hover:shadow-md transition-all border border-gray-100 hover:border-red-200"
               >
-                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-full font-bold text-lg shadow-md">
-                  {index + 1}
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-xl font-bold text-xl shadow-lg">
+                    {index + 1}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 text-lg">{item.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    <span className="font-medium">{item.orders}</span> {item.orders === 1 ? 'замовлення' : 'замовлень'} • 
-                    <span className="font-medium ml-1">{item.sold}</span> {item.sold === 1 ? 'продано' : 'продано'}
-                  </p>
+                    <h3 className="font-bold text-gray-900 text-lg">{item.name}</h3>
+                    <div className="flex items-center gap-4 mt-1">
+                      <span className="text-sm text-gray-600">
+                        📦 <span className="font-semibold">{item.orders}</span> замовлень
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        🍽️ <span className="font-semibold">{item.sold}</span> продано
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-8">No orders yet</p>
+          <div className="text-center py-12 text-gray-400">
+            <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <p>Поки що немає замовлень</p>
+          </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

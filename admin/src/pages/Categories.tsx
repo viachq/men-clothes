@@ -1,10 +1,21 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
-import type { Category } from '../types';
-import { Plus, Edit, Trash2, FolderOpen } from 'lucide-react';
+import type { Category, MenuItem } from '../types';
+import { Plus, Edit, Trash2, FolderOpen, Package, DollarSign, TrendingUp } from 'lucide-react';
+import Card from '../components/ui/Card';
+import Badge from '../components/ui/Badge';
+import Button from '../components/ui/Button';
+
+interface CategoryStats {
+  id: number;
+  items_count: number;
+  orders_count: number;
+  revenue: number;
+}
 
 export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -12,6 +23,7 @@ export default function Categories() {
 
   useEffect(() => {
     fetchCategories();
+    fetchMenuItems();
   }, []);
 
   const fetchCategories = async () => {
@@ -21,6 +33,25 @@ export default function Categories() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchMenuItems = async () => {
+    try {
+      const response = await api.get('/menu/');
+      setMenuItems(response.data);
+    } catch (error) {
+      console.error('Failed to fetch menu items:', error);
+    }
+  };
+
+  const getCategoryStats = (categoryId: number): CategoryStats => {
+    const items = menuItems.filter((item) => item.category_id === categoryId);
+    return {
+      id: categoryId,
+      items_count: items.length,
+      orders_count: 0, // Можна додати з backend
+      revenue: 0,
+    };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,31 +113,59 @@ export default function Categories() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {categories.map((category) => (
-          <div key={category.id} className="bg-white rounded-xl shadow-sm border p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <FolderOpen className="w-8 h-8 text-red-600" />
-              <h3 className="text-xl font-bold text-gray-900">{category.name}</h3>
-            </div>
-            <p className="text-gray-600 text-sm mb-4">{category.description || 'No description'}</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => openModal(category)}
-                className="flex-1 flex items-center justify-center gap-1 p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-              >
-                <Edit className="w-4 h-4" />
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(category.id)}
-                className="flex-1 flex items-center justify-center gap-1 p-2 text-red-600 hover:bg-red-50 rounded-lg"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+        {categories.map((category) => {
+          const stats = getCategoryStats(category.id);
+          const categoryIcons: Record<string, string> = {
+            'Закуски та Салати': '🥗',
+            'Основні страви': '🍖',
+            'Десерти': '🍰',
+            'Напої': '🥤',
+          };
+          const icon = categoryIcons[category.name] || '🍴';
+          
+          return (
+            <Card key={category.id} padding="md" className="hover:shadow-xl transition-all hover:-translate-y-1">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg">
+                    {icon}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">{category.name}</h3>
+                    <Badge variant="gray" size="sm" className="mt-1">
+                      {stats.items_count} страв
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-gray-600 text-sm mb-6 line-clamp-2 min-h-[40px]">
+                {category.description || 'Опис відсутній'}
+              </p>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => openModal(category)}
+                  icon={<Edit className="w-4 h-4" />}
+                  className="flex-1"
+                >
+                  Редагувати
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => handleDelete(category.id)}
+                  icon={<Trash2 className="w-4 h-4" />}
+                  className="flex-1"
+                >
+                  Видалити
+                </Button>
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       {categories.length === 0 && (

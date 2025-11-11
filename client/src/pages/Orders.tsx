@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import type { Order } from '../types';
-import { Package, Clock, CheckCircle, XCircle, Truck, Star, MapPin, Calendar, CreditCard } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, Truck, Star, MapPin, Calendar, CreditCard, Filter } from 'lucide-react';
+import { showSuccess, showError } from '../utils/notifications';
 
 const statusIcons: Record<string, any> = {
   pending: Clock,
@@ -41,6 +42,7 @@ export default function Orders() {
   const [reviewModal, setReviewModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,12 +77,31 @@ export default function Orders() {
 
     try {
       await api.post(`/orders/${selectedOrder}/review`, { rating, comment });
-      alert('Дякуємо за відгук!');
+      showSuccess('Дякуємо за відгук!');
       setReviewModal(false);
       fetchOrders();
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Помилка при додаванні відгуку');
+      showError(error.response?.data?.detail || 'Помилка при додаванні відгуку');
     }
+  };
+
+  // Фільтрація замовлень
+  const filteredOrders = statusFilter === 'all' 
+    ? orders 
+    : orders.filter((o) => o.status === statusFilter);
+
+  // Прогрес-бар для статусу замовлення
+  const getProgressPercentage = (status: string) => {
+    const progress: Record<string, number> = {
+      pending: 14,
+      accepted: 28,
+      preparing: 42,
+      ready: 56,
+      delivering: 85,
+      delivered: 100,
+      cancelled: 0,
+    };
+    return progress[status] || 0;
   };
 
   if (loading) {
@@ -113,10 +134,45 @@ export default function Orders() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Мої замовлення</h1>
+      <h1 className="text-3xl font-bold text-neutral-900 mb-6">Мої замовлення</h1>
+
+      {/* Фільтри статусів */}
+      <div className="mb-8 flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        <Filter className="w-5 h-5 text-neutral-500 flex-shrink-0" />
+        {[
+          { value: 'all', label: '🔍 Всі', icon: null },
+          { value: 'pending', label: 'Очікує', icon: Clock },
+          { value: 'preparing', label: 'Готується', icon: Package },
+          { value: 'delivering', label: 'Доставка', icon: Truck },
+          { value: 'delivered', label: 'Доставлено', icon: CheckCircle },
+        ].map((filter) => {
+          const FilterIcon = filter.icon;
+          return (
+            <button
+              key={filter.value}
+              onClick={() => setStatusFilter(filter.value)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold transition-all whitespace-nowrap ${
+                statusFilter === filter.value
+                  ? 'bg-red-600 text-white shadow-lg shadow-red-500/25'
+                  : 'bg-white text-neutral-700 border-2 border-neutral-200 hover:border-red-300'
+              }`}
+            >
+              {FilterIcon && <FilterIcon className="w-4 h-4" />}
+              <span>{filter.label}</span>
+              {filter.value === 'all' && (
+                <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-bold ${
+                  statusFilter === 'all' ? 'bg-white/20' : 'bg-neutral-100'
+                }`}>
+                  {orders.length}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       <div className="space-y-4">
-        {orders.map((order) => {
+        {filteredOrders.map((order) => {
           const StatusIcon = statusIcons[order.status] || Clock;
           return (
             <div key={order.id} className="bg-white rounded-xl shadow-sm p-6">
@@ -156,14 +212,30 @@ export default function Orders() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t">
+              {/* Прогрес-бар замовлення */}
+              {order.status !== 'cancelled' && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between text-xs text-neutral-600 mb-2">
+                    <span className="font-medium">Прогрес замовлення</span>
+                    <span className="font-bold">{getProgressPercentage(order.status)}%</span>
+                  </div>
+                  <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-500 rounded-full"
+                      style={{ width: `${getProgressPercentage(order.status)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-4 border-t mt-4">
                 <span className="text-2xl font-bold text-red-600">
                   ₴{(order.total_price / 100).toFixed(2)}
                 </span>
                 {order.status === 'delivered' && (
                   <button
                     onClick={() => openReviewModal(order.id)}
-                    className="flex items-center gap-2 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 font-medium"
+                    className="flex items-center gap-2 bg-yellow-500 text-white px-4 py-2.5 rounded-xl hover:bg-yellow-600 font-semibold transition-all shadow-md hover:shadow-lg active:scale-95"
                   >
                     <Star className="w-4 h-4" />
                     Залишити відгук

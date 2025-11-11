@@ -2,7 +2,9 @@ import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-do
 import { useEffect, useState } from 'react';
 import type { MenuItem, Category } from './types';
 import api from './api/client';
-import { ShoppingCart, User, Package, Home, LogOut, Info } from 'lucide-react';
+import { ShoppingCart, User, Package, Home, LogOut, Info, Search, X } from 'lucide-react';
+import { useDebounce } from './hooks/useDebounce';
+import { showSuccess, showError } from './utils/notifications';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Cart from './pages/Cart';
@@ -15,6 +17,22 @@ function Header() {
   const isLoggedIn = !!localStorage.getItem('client_token');
   const user = localStorage.getItem('client_user');
   const username = user ? JSON.parse(user).username : '';
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchCartCount();
+    }
+  }, [isLoggedIn]);
+
+  const fetchCartCount = async () => {
+    try {
+      const response = await api.get('/cart/me');
+      setCartCount(response.data.items.length);
+    } catch (error) {
+      // Тихо ігноруємо помилку
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('client_token');
@@ -23,38 +41,43 @@ function Header() {
   };
 
   return (
-    <header className="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
+    <header className="glass shadow-sm sticky top-0 z-50 border-b border-neutral-200">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-3xl font-extrabold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent flex items-center gap-2 hover:scale-105 transition-transform">
+          <Link to="/" className="text-3xl font-extrabold text-gradient flex items-center gap-2 hover:scale-105 transition-transform">
             🍕 Food Delivery
           </Link>
-          <nav className="flex gap-2 md:gap-4 items-center">
-            <Link to="/" className="text-gray-700 hover:text-red-600 font-semibold flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all">
+          <nav className="flex gap-2 md:gap-3 items-center">
+            <Link to="/" className="text-neutral-700 hover:text-red-600 font-medium flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all">
               <Home className="w-5 h-5" />
               <span className="hidden md:inline">Меню</span>
             </Link>
-            <Link to="/about" className="text-gray-700 hover:text-red-600 font-semibold flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all">
+            <Link to="/about" className="text-neutral-700 hover:text-red-600 font-medium flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all">
               <Info className="w-5 h-5" />
               <span className="hidden md:inline">Про нас</span>
             </Link>
-            <Link to="/cart" className="text-gray-700 hover:text-red-600 font-semibold flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all">
+            <Link to="/cart" className="text-neutral-700 hover:text-red-600 font-medium flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all relative">
               <ShoppingCart className="w-5 h-5" />
               <span className="hidden md:inline">Кошик</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
             </Link>
             {isLoggedIn ? (
               <>
-                <Link to="/orders" className="text-gray-700 hover:text-red-600 font-semibold flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all">
+                <Link to="/orders" className="text-neutral-700 hover:text-red-600 font-medium flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all">
                   <Package className="w-5 h-5" />
                   <span className="hidden md:inline">Замовлення</span>
                 </Link>
                 <div className="flex items-center gap-3 ml-2">
-                  <span className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full hidden md:inline">
+                  <span className="text-sm font-medium text-neutral-700 bg-neutral-100 px-3 py-1.5 rounded-full hidden md:inline">
                     {username}
                   </span>
                   <button
                     onClick={handleLogout}
-                    className="text-gray-700 hover:text-red-600 font-semibold flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all"
+                    className="text-neutral-700 hover:text-red-600 font-medium flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all"
                   >
                     <LogOut className="w-5 h-5" />
                     <span className="hidden md:inline">Вихід</span>
@@ -62,7 +85,7 @@ function Header() {
                 </div>
               </>
             ) : (
-              <Link to="/login" className="bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold px-5 py-2.5 rounded-xl hover:from-red-700 hover:to-red-600 transition-all flex items-center gap-2 shadow-md hover:shadow-lg">
+              <Link to="/login" className="bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95">
                 <User className="w-5 h-5" />
                 <span className="hidden md:inline">Вхід</span>
               </Link>
@@ -93,41 +116,44 @@ function App() {
           </Routes>
         </main>
 
+        {/* Липкий кошик для мобільних (тільки на головній сторінці) */}
+        <FloatingCart />
+
         {/* Footer */}
-        <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white mt-24">
+        <footer className="bg-gradient-to-br from-neutral-50 via-white to-neutral-100 border-t-2 border-neutral-200 mt-24">
           <div className="max-w-7xl mx-auto px-4 py-12">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-8">
               {/* Про нас */}
               <div>
-                <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+                <h3 className="text-xl font-bold mb-4 text-neutral-900">
                   Про нас
                 </h3>
-                <p className="text-gray-400 text-sm leading-relaxed">
+                <p className="text-neutral-600 text-sm leading-relaxed">
                   Food Delivery - ваш надійний партнер у доставці смачної їжі швидко та зручно.
                 </p>
               </div>
               
               {/* Навігація */}
               <div>
-                <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+                <h3 className="text-xl font-bold mb-4 text-neutral-900">
                   Навігація
                 </h3>
                 <ul className="space-y-3 text-sm">
                   <li>
-                    <Link to="/" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
-                      <span className="w-1 h-1 bg-red-500 rounded-full group-hover:w-2 transition-all"></span>
+                    <Link to="/" className="text-neutral-600 hover:text-red-600 transition-colors flex items-center gap-2 group">
+                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full group-hover:w-2.5 transition-all"></span>
                       Меню
                     </Link>
                   </li>
                   <li>
-                    <Link to="/about" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
-                      <span className="w-1 h-1 bg-red-500 rounded-full group-hover:w-2 transition-all"></span>
+                    <Link to="/about" className="text-neutral-600 hover:text-red-600 transition-colors flex items-center gap-2 group">
+                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full group-hover:w-2.5 transition-all"></span>
                       Про ресторан
                     </Link>
                   </li>
                   <li>
-                    <Link to="/orders" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
-                      <span className="w-1 h-1 bg-red-500 rounded-full group-hover:w-2 transition-all"></span>
+                    <Link to="/orders" className="text-neutral-600 hover:text-red-600 transition-colors flex items-center gap-2 group">
+                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full group-hover:w-2.5 transition-all"></span>
                       Мої замовлення
                     </Link>
                   </li>
@@ -136,7 +162,7 @@ function App() {
               
               {/* Соціальні мережі та контакти */}
               <div>
-                <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+                <h3 className="text-xl font-bold mb-4 text-neutral-900">
                   Зв'яжіться з нами
                 </h3>
                 <div className="flex gap-4 mb-5">
@@ -144,7 +170,7 @@ function App() {
                     href="https://facebook.com" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-10 h-10 bg-gray-700 hover:bg-blue-600 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                    className="w-10 h-10 bg-neutral-200 hover:bg-blue-600 hover:text-white text-neutral-700 rounded-full flex items-center justify-center transition-all hover:scale-110"
                     aria-label="Facebook"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -155,7 +181,7 @@ function App() {
                     href="https://instagram.com" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-10 h-10 bg-gray-700 hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-500 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                    className="w-10 h-10 bg-neutral-200 hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-500 hover:text-white text-neutral-700 rounded-full flex items-center justify-center transition-all hover:scale-110"
                     aria-label="Instagram"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -166,7 +192,7 @@ function App() {
                     href="https://twitter.com" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-10 h-10 bg-gray-700 hover:bg-blue-400 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                    className="w-10 h-10 bg-neutral-200 hover:bg-blue-400 hover:text-white text-neutral-700 rounded-full flex items-center justify-center transition-all hover:scale-110"
                     aria-label="Twitter"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -174,17 +200,17 @@ function App() {
                     </svg>
                   </a>
                 </div>
-                <p className="text-gray-400 text-sm mb-2 flex items-center gap-2">
+                <p className="text-neutral-600 text-sm mb-2 flex items-center gap-2">
                   <span>📞</span> +380 XX XXX XXXX
                 </p>
-                <p className="text-gray-400 text-sm flex items-center gap-2">
+                <p className="text-neutral-600 text-sm flex items-center gap-2">
                   <span>📧</span> info@fooddelivery.com
                 </p>
               </div>
             </div>
             
-            <div className="border-t border-gray-700 pt-8 text-center">
-              <p className="text-gray-400 text-sm">
+            <div className="border-t border-neutral-300 pt-8 text-center">
+              <p className="text-neutral-600 text-sm">
                 Food Delivery 2025 • Створено з ❤️ для любителів смачної їжі
               </p>
             </div>
@@ -201,6 +227,9 @@ function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'price_asc' | 'price_desc'>('name');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     fetchCategories();
@@ -234,6 +263,30 @@ function HomePage() {
     fetchMenu(categoryId);
   };
 
+  // Фільтрація та сортування
+  const getFilteredAndSortedItems = () => {
+    let items = [...menuItems];
+
+    // Пошук
+    if (debouncedSearchQuery) {
+      const query = debouncedSearchQuery.toLowerCase();
+      items = items.filter(
+        (item) =>
+          item.name.toLowerCase().includes(query) ||
+          item.description?.toLowerCase().includes(query)
+      );
+    }
+
+    // Сортування
+    items.sort((a, b) => {
+      if (sortBy === 'price_asc') return a.price - b.price;
+      if (sortBy === 'price_desc') return b.price - a.price;
+      return a.name.localeCompare(b.name, 'uk');
+    });
+
+    return items;
+  };
+
   const addToCart = async (item: MenuItem) => {
     // Check if user is logged in
     if (!localStorage.getItem('client_token')) {
@@ -249,75 +302,30 @@ function HomePage() {
         quantity: 1,
         price: item.price,
       });
-      
-      // Remove existing notifications to avoid stacking
-      const existingNotifications = document.querySelectorAll('.cart-notification');
-      existingNotifications.forEach(n => n.remove());
-      
-      // Show success message with modern design
-      const notification = document.createElement('div');
-      notification.className = 'cart-notification fixed top-24 right-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 animate-fade-in flex items-center gap-3 max-w-md';
-      notification.innerHTML = `
-        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="font-bold">${item.name}</p>
-          <p class="text-sm text-green-100">успішно додано в кошик</p>
-        </div>
-      `;
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(400px)';
-        notification.style.transition = 'all 0.3s ease-out';
-        setTimeout(() => notification.remove(), 300);
-      }, 3000);
+
+      showSuccess(`${item.name} додано в кошик`);
     } catch (error) {
       console.error('Failed to add to cart:', error);
-      
-      // Remove existing notifications
-      const existingNotifications = document.querySelectorAll('.cart-notification');
-      existingNotifications.forEach(n => n.remove());
-      
-      // Show error message
-      const notification = document.createElement('div');
-      notification.className = 'cart-notification fixed top-24 right-4 bg-gradient-to-r from-red-500 to-rose-500 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 animate-fade-in flex items-center gap-3';
-      notification.innerHTML = `
-        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="font-bold">Помилка</p>
-          <p class="text-sm text-red-100">Не вдалося додати в кошик</p>
-        </div>
-      `;
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(400px)';
-        notification.style.transition = 'all 0.3s ease-out';
-        setTimeout(() => notification.remove(), 300);
-      }, 3000);
+      showError('Не вдалося додати в кошик');
     }
   };
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
+    <div className="bg-gradient-to-b from-neutral-50 to-white min-h-screen">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-16 md:py-20">
+      <div className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-red-900 to-neutral-900">
+        {/* Декоративні елементи */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-red-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-500 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 md:py-24">
           <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-extrabold mb-4 tracking-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 tracking-tight text-white animate-fade-in">
               Смачна їжа до вашого дому
             </h1>
-            <p className="text-xl md:text-2xl text-red-50 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-neutral-200 max-w-2xl mx-auto leading-relaxed">
               Обирайте з нашого меню та насолоджуйтесь швидкою доставкою
             </p>
           </div>
@@ -326,60 +334,142 @@ function HomePage() {
 
       {/* Menu Section */}
       <div className="max-w-7xl mx-auto px-4 py-12">
+        {/* Пошук та сортування */}
+        <div className="mb-8 space-y-4">
+          {/* Пошук */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="🔍 Шукати страви..."
+              className="w-full px-12 py-4 text-lg border-2 border-neutral-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all placeholder:text-neutral-400"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          {/* Сортування та результати */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-neutral-600 font-medium">Сортування:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="px-4 py-2 border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent font-medium text-neutral-700 cursor-pointer hover:border-neutral-300 transition-all"
+              >
+                <option value="name">За назвою</option>
+                <option value="price_asc">Ціна: дешевші спочатку</option>
+                <option value="price_desc">Ціна: дорожчі спочатку</option>
+              </select>
+            </div>
+
+            {debouncedSearchQuery && (
+              <div className="text-sm text-neutral-600">
+                Знайдено: <span className="font-bold text-neutral-900">{getFilteredAndSortedItems().length}</span> страв
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Category Filter */}
         {categories.length > 0 && (
           <div className="mb-10">
+            <h2 className="text-2xl font-bold text-neutral-900 mb-4">Категорії</h2>
             <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
               <button
                 onClick={() => handleCategoryClick(null)}
-                className={`px-6 py-3 rounded-2xl font-semibold transition-all whitespace-nowrap flex-shrink-0 ${
+                className={`px-6 py-3 rounded-2xl font-semibold transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-2 ${
                   selectedCategory === null
-                    ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30 scale-105'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-red-300'
+                    ? 'bg-red-600 text-white shadow-lg shadow-red-500/25 scale-105'
+                    : 'bg-white text-neutral-700 hover:bg-neutral-50 border-2 border-neutral-200 hover:border-red-300'
                 }`}
               >
+                <span className="text-xl">🍽️</span>
                 Всі страви
               </button>
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryClick(category.id)}
-                  className={`px-6 py-3 rounded-2xl font-semibold transition-all whitespace-nowrap flex-shrink-0 ${
-                    selectedCategory === category.id
-                      ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30 scale-105'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-red-300'
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
+              {categories.map((category) => {
+                const categoryIcons: { [key: string]: string } = {
+                  'Закуски та Салати': '🥗',
+                  'Основні страви': '🍖',
+                  'Десерти': '🍰',
+                  'Напої': '🥤',
+                  'default': '🍴'
+                };
+                const icon = categoryIcons[category.name] || categoryIcons['default'];
+                
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryClick(category.id)}
+                    className={`px-6 py-3 rounded-2xl font-semibold transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-2 ${
+                      selectedCategory === category.id
+                        ? 'bg-red-600 text-white shadow-lg shadow-red-500/25 scale-105'
+                        : 'bg-white text-neutral-700 hover:bg-neutral-50 border-2 border-neutral-200 hover:border-red-300'
+                    }`}
+                  >
+                    <span className="text-xl">{icon}</span>
+                    {category.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
         {loading ? (
-          <div className="flex justify-center p-20">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-red-600"></div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl">
-                🍕
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-white rounded-3xl shadow-sm overflow-hidden border border-neutral-100">
+                <div className="w-full h-56 skeleton"></div>
+                <div className="p-6 space-y-3">
+                  <div className="h-7 skeleton w-3/4"></div>
+                  <div className="h-4 skeleton w-full"></div>
+                  <div className="h-4 skeleton w-5/6"></div>
+                  <div className="h-12 skeleton rounded-xl mt-4"></div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        ) : menuItems.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl shadow-sm">
+        ) : getFilteredAndSortedItems().length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-neutral-100">
             <div className="text-6xl mb-4">😔</div>
-            <p className="text-gray-500 text-xl mb-2 font-medium">Меню тимчасово недоступне</p>
-            <p className="text-gray-400">Будь ласка, зайдіть пізніше</p>
+            <p className="text-neutral-700 text-xl mb-2 font-semibold">
+              {debouncedSearchQuery ? 'Нічого не знайдено' : 'Меню тимчасово недоступне'}
+            </p>
+            <p className="text-neutral-500">
+              {debouncedSearchQuery
+                ? 'Спробуйте змінити запит або очистити фільтри'
+                : 'Будь ласка, зайдіть пізніше'}
+            </p>
+            {debouncedSearchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="mt-6 inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-700 transition-all shadow-lg"
+              >
+                <X className="w-5 h-5" />
+                Очистити пошук
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {menuItems.map((item) => (
+            {getFilteredAndSortedItems().map((item) => (
               <div 
                 key={item.id} 
-                className="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2 flex flex-col"
+                className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden hover-lift flex flex-col border border-neutral-100 hover:border-red-200"
               >
                 <div className="relative overflow-hidden">
+                  {/* Gradient overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-red-50/0 to-red-50/0 group-hover:from-red-50/30 group-hover:to-transparent transition-all duration-300 pointer-events-none z-10"></div>
+                  
                   {item.image_url ? (
                     <img 
                       src={item.image_url} 
@@ -391,24 +481,25 @@ function HomePage() {
                       <span className="text-white text-7xl drop-shadow-lg">🍕</span>
                     </div>
                   )}
-                  {/* Price badge */}
-                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
-                    <span className="text-2xl font-bold text-red-600">
+                  
+                  {/* Price badge - новий дизайн */}
+                  <div className="absolute top-4 right-4 bg-gradient-to-br from-neutral-900/90 to-neutral-800/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-xl border border-white/10 z-20">
+                    <span className="text-xl font-bold text-white">
                       ₴{(item.price / 100).toFixed(0)}
                     </span>
                   </div>
                 </div>
                 
                 <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-red-600 transition-colors">
+                  <h3 className="text-2xl font-bold text-neutral-900 mb-3 group-hover:text-red-600 transition-colors">
                     {item.name}
                   </h3>
-                  <p className="text-gray-600 mb-5 text-sm leading-relaxed line-clamp-2 flex-1">
+                  <p className="text-neutral-600 mb-6 text-sm leading-relaxed line-clamp-2 flex-1">
                     {item.description || 'Смачна страва від нашого кухаря'}
                   </p>
                   <button 
                     onClick={() => addToCart(item)}
-                    className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-3.5 rounded-xl hover:from-red-700 hover:to-red-600 transition-all font-semibold flex items-center justify-center gap-2 shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/40 active:scale-95"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3.5 rounded-xl transition-all font-semibold flex items-center justify-center gap-2 shadow-lg shadow-red-600/25 hover:shadow-xl hover:shadow-red-600/40 active:scale-95"
                   >
                     <ShoppingCart className="w-5 h-5" />
                     Додати в кошик
@@ -420,6 +511,46 @@ function HomePage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Floating Cart Component для мобільних
+function FloatingCart() {
+  const [cartCount, setCartCount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const loggedIn = !!localStorage.getItem('client_token');
+    setIsLoggedIn(loggedIn);
+    
+    if (loggedIn) {
+      fetchCartCount();
+      
+      // Оновлюємо кожні 10 секунд
+      const interval = setInterval(fetchCartCount, 10000);
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  const fetchCartCount = async () => {
+    try {
+      const response = await api.get('/cart/me');
+      setCartCount(response.data.items.length);
+    } catch (error) {
+      // Тихо ігноруємо
+    }
+  };
+
+  if (!isLoggedIn || cartCount === 0) return null;
+
+  return (
+    <Link
+      to="/cart"
+      className="lg:hidden fixed bottom-6 right-6 z-40 bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded-full shadow-2xl hover:shadow-red-500/50 transition-all flex items-center gap-3 font-semibold animate-bounce-subtle"
+    >
+      <ShoppingCart className="w-6 h-6" />
+      <span className="text-lg">{cartCount}</span>
+    </Link>
   );
 }
 

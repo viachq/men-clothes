@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
-import { CreditCard, MapPin, Calendar, CheckCircle } from 'lucide-react';
+import { CreditCard, MapPin, Calendar, CheckCircle, ShoppingBag } from 'lucide-react';
+import { showError } from '../utils/notifications';
 
 export default function Checkout() {
   const [address, setAddress] = useState('');
@@ -9,13 +10,31 @@ export default function Checkout() {
   const [useScheduledDelivery, setUseScheduledDelivery] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [cartTotal, setCartTotal] = useState(0);
+  const [cartItemsCount, setCartItemsCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!localStorage.getItem('client_token')) {
       navigate('/login');
+      return;
     }
+    fetchCartSummary();
   }, [navigate]);
+
+  const fetchCartSummary = async () => {
+    try {
+      const response = await api.get('/cart/me');
+      const total = response.data.items.reduce(
+        (sum: number, item: any) => sum + item.price * item.quantity,
+        0
+      );
+      setCartTotal(total);
+      setCartItemsCount(response.data.items.length);
+    } catch (error) {
+      console.error('Failed to fetch cart:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +54,7 @@ export default function Checkout() {
         navigate(`/orders`);
       }, 2000);
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Помилка при створенні замовлення');
+      showError(error.response?.data?.detail || 'Помилка при створенні замовлення');
     } finally {
       setLoading(false);
     }
@@ -141,13 +160,38 @@ export default function Checkout() {
           </div>
         </div>
 
+        {/* Підсумок замовлення */}
+        <div className="bg-gradient-to-br from-neutral-50 to-white rounded-2xl shadow-sm p-6 border-2 border-neutral-200">
+          <div className="flex items-center gap-3 mb-4">
+            <ShoppingBag className="w-6 h-6 text-red-600" />
+            <h3 className="text-xl font-bold text-neutral-900">Підсумок замовлення</h3>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between text-neutral-600">
+              <span>Товари ({cartItemsCount} шт)</span>
+              <span className="font-semibold">₴{(cartTotal / 100).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-neutral-600">
+              <span>Доставка</span>
+              <span className="font-semibold text-accent-600">Безкоштовно</span>
+            </div>
+            <div className="border-t-2 border-neutral-200 pt-3 flex justify-between items-center">
+              <span className="text-xl font-bold text-neutral-900">Разом до сплати:</span>
+              <span className="text-3xl font-bold text-red-600">
+                ₴{(cartTotal / 100).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-red-600 text-white py-4 px-6 rounded-lg font-medium text-lg hover:bg-red-700 disabled:opacity-50"
+          disabled={loading || cartTotal === 0}
+          className="w-full bg-red-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl active:scale-95"
         >
-          {loading ? 'Оформлення...' : 'Підтвердити замовлення'}
+          {loading ? 'Оформлення...' : `Підтвердити замовлення на ₴${(cartTotal / 100).toFixed(2)}`}
         </button>
       </form>
     </div>

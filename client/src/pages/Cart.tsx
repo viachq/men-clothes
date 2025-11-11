@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/client';
 import type { CartItem, MenuItem } from '../types';
-import { ShoppingCart, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ArrowLeft } from 'lucide-react';
+import { showSuccess, showError } from '../utils/notifications';
 
 interface CartItemWithDetails extends CartItem {
   menu_item: MenuItem;
@@ -11,6 +12,7 @@ interface CartItemWithDetails extends CartItem {
 export default function Cart() {
   const [cartItems, setCartItems] = useState<CartItemWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [removingItems, setRemovingItems] = useState<Set<number>>(new Set());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,18 +52,33 @@ export default function Cart() {
     try {
       await api.put(`/cart/me/items/${itemId}`, { quantity: newQuantity });
       fetchCart();
+      showSuccess('Кількість оновлено');
     } catch (error) {
       console.error('Failed to update quantity:', error);
+      showError('Помилка оновлення кількості');
     }
   };
 
   const removeItem = async (itemId: number) => {
-    try {
-      await api.delete(`/cart/me/items/${itemId}`);
-      fetchCart();
-    } catch (error) {
-      console.error('Failed to remove item:', error);
-    }
+    // Додаємо анімацію видалення
+    setRemovingItems((prev) => new Set(prev).add(itemId));
+    
+    setTimeout(async () => {
+      try {
+        await api.delete(`/cart/me/items/${itemId}`);
+        await fetchCart();
+        showSuccess('Товар видалено з кошика');
+      } catch (error) {
+        console.error('Failed to remove item:', error);
+        showError('Помилка при видаленні');
+        // Повертаємо стан назад при помилці
+        setRemovingItems((prev) => {
+          const next = new Set(prev);
+          next.delete(itemId);
+          return next;
+        });
+      }
+    }, 300);
   };
 
   const clearCart = async () => {
@@ -69,8 +86,10 @@ export default function Cart() {
     try {
       await api.delete('/cart/me');
       setCartItems([]);
+      showSuccess('Кошик очищено');
     } catch (error) {
       console.error('Failed to clear cart:', error);
+      showError('Помилка очищення кошика');
     }
   };
 
@@ -91,16 +110,17 @@ export default function Cart() {
   if (cartItems.length === 0) {
     return (
       <div className="max-w-4xl mx-auto p-8">
-        <div className="text-center py-16 bg-white rounded-xl">
-          <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Ваш кошик порожній</h2>
-          <p className="text-gray-600 mb-6">Додайте страви з меню</p>
-          <a
-            href="/"
-            className="inline-block bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700"
+        <div className="text-center py-16 bg-white rounded-3xl shadow-sm border border-neutral-100">
+          <ShoppingCart className="w-20 h-20 text-neutral-300 mx-auto mb-6" />
+          <h2 className="text-3xl font-bold text-neutral-900 mb-3">Ваш кошик порожній</h2>
+          <p className="text-neutral-600 mb-8 text-lg">Додайте страви з меню, щоб почати замовлення</p>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 bg-red-600 text-white px-8 py-4 rounded-xl font-semibold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl active:scale-95"
           >
+            <ArrowLeft className="w-5 h-5" />
             Переглянути меню
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -120,54 +140,77 @@ export default function Cart() {
 
       <div className="space-y-4 mb-8">
         {cartItems.map((item) => (
-          <div key={item.id} className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+          <div
+            key={item.id}
+            className={`bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-6 border border-neutral-100 ${
+              removingItems.has(item.id) ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+            }`}
+          >
+            {/* Індикатор економії при великій кількості */}
+            {item.quantity >= 3 && (
+              <div className="mb-3 inline-flex items-center gap-2 bg-accent-50 text-accent-700 px-3 py-1.5 rounded-full text-sm font-semibold border border-accent-200">
+                <span>🎉</span>
+                Чудовий вибір! {item.quantity} порції
+              </div>
+            )}
+
             <div className="flex gap-4">
               {item.menu_item.image_url ? (
                 <img
                   src={item.menu_item.image_url}
                   alt={item.menu_item.name}
-                  className="w-24 h-24 object-cover rounded-lg"
+                  loading="lazy"
+                  className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-xl border border-neutral-200"
                 />
               ) : (
-                <div className="w-24 h-24 bg-gradient-to-br from-red-400 to-orange-400 rounded-lg flex items-center justify-center">
-                  <span className="text-3xl">🍕</span>
+                <div className="w-24 h-24 md:w-28 md:h-28 bg-gradient-to-br from-red-400 to-orange-400 rounded-xl flex items-center justify-center">
+                  <span className="text-4xl">🍕</span>
                 </div>
               )}
 
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-1">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg md:text-xl font-bold text-neutral-900 mb-2">
                   {item.menu_item.name}
                 </h3>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
                   {item.menu_item.description}
                 </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  {/* Кількість */}
+                  <div className="flex items-center gap-2 bg-neutral-50 rounded-xl p-1 border border-neutral-200">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="p-1 rounded-lg hover:bg-gray-100"
+                      className="p-2 rounded-lg hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-90"
                       disabled={item.quantity <= 1}
                     >
-                      <Minus className="w-5 h-5 text-gray-600" />
+                      <Minus className="w-4 h-4 text-neutral-700" />
                     </button>
-                    <span className="font-medium text-lg w-8 text-center">
+                    <span className="font-bold text-lg w-10 text-center text-neutral-900">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="p-1 rounded-lg hover:bg-gray-100"
+                      className="p-2 rounded-lg hover:bg-white transition-all active:scale-90"
                     >
-                      <Plus className="w-5 h-5 text-gray-600" />
+                      <Plus className="w-4 h-4 text-neutral-700" />
                     </button>
                   </div>
 
+                  {/* Ціна та видалення */}
                   <div className="flex items-center gap-4">
-                    <span className="text-xl font-bold text-red-600">
-                      ₴{((item.price * item.quantity) / 100).toFixed(2)}
-                    </span>
+                    <div className="text-right">
+                      <div className="text-sm text-neutral-500">
+                        ₴{(item.price / 100).toFixed(0)} × {item.quantity}
+                      </div>
+                      <div className="text-xl md:text-2xl font-bold text-red-600">
+                        ₴{((item.price * item.quantity) / 100).toFixed(0)}
+                      </div>
+                    </div>
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all active:scale-90"
+                      title="Видалити"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -180,20 +223,43 @@ export default function Cart() {
       </div>
 
       {/* Total and Checkout */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6 pb-6 border-b">
-          <span className="text-xl font-medium text-gray-900">Разом:</span>
-          <span className="text-3xl font-bold text-red-600">
-            ₴{(getTotalPrice() / 100).toFixed(2)}
-          </span>
+      <div className="bg-white rounded-2xl shadow-sm p-6 border border-neutral-100">
+        <h3 className="text-lg font-bold text-neutral-900 mb-4">Підсумок замовлення</h3>
+        
+        <div className="space-y-3 mb-6">
+          <div className="flex justify-between text-neutral-600">
+            <span>Товари ({cartItems.length} шт)</span>
+            <span className="font-semibold">₴{(getTotalPrice() / 100).toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-neutral-600">
+            <span>Доставка</span>
+            <span className="font-semibold text-accent-600">Безкоштовно</span>
+          </div>
+          <div className="border-t-2 border-neutral-200 pt-3 flex justify-between items-center">
+            <span className="text-xl font-bold text-neutral-900">Разом:</span>
+            <span className="text-3xl font-bold text-red-600">
+              ₴{(getTotalPrice() / 100).toFixed(2)}
+            </span>
+          </div>
         </div>
-        <button
-          onClick={() => navigate('/checkout')}
-          className="w-full bg-red-600 text-white py-4 px-6 rounded-lg font-medium hover:bg-red-700 flex items-center justify-center gap-2"
-        >
-          Оформити замовлення
-          <ArrowRight className="w-5 h-5" />
-        </button>
+
+        <div className="space-y-3">
+          <button
+            onClick={() => navigate('/checkout')}
+            className="w-full bg-red-600 text-white py-4 px-6 rounded-xl font-semibold hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95"
+          >
+            Оформити замовлення
+            <ArrowRight className="w-5 h-5" />
+          </button>
+          
+          <Link
+            to="/"
+            className="w-full flex items-center justify-center gap-2 bg-neutral-100 text-neutral-700 py-3 px-6 rounded-xl font-medium hover:bg-neutral-200 transition-all"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Продовжити покупки
+          </Link>
+        </div>
       </div>
     </div>
   );

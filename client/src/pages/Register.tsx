@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/client';
-import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
+import { UserPlus, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { showSuccess } from '../utils/notifications';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -9,7 +10,25 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+
+  // Перевірка сили пароля
+  const getPasswordStrength = () => {
+    if (!password) return { strength: 0, label: '', color: '' };
+    
+    let strength = 0;
+    if (password.length >= 6) strength++;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    if (strength <= 2) return { strength, label: 'Слабкий', color: 'bg-red-500' };
+    if (strength <= 3) return { strength, label: 'Середній', color: 'bg-yellow-500' };
+    return { strength, label: 'Сильний', color: 'bg-green-500' };
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,13 +55,16 @@ export default function Register() {
       localStorage.setItem('client_token', loginResponse.data.access_token);
       localStorage.setItem('client_user', JSON.stringify(loginResponse.data.user));
       
-      navigate('/');
+      showSuccess(`Вітаємо, ${username}! Реєстрація успішна`);
+      setTimeout(() => navigate('/'), 500);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Помилка реєстрації');
     } finally {
       setLoading(false);
     }
   };
+
+  const passwordStrength = getPasswordStrength();
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -84,37 +106,98 @@ export default function Register() {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Пароль
               </label>
-              <input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Мінімум 6 символів"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 border-2 border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                  placeholder="Мінімум 6 символів"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              
+              {/* Індикатор сили пароля */}
+              {password && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-neutral-600">Сила пароля:</span>
+                    <span className={`font-bold ${
+                      passwordStrength.strength <= 2 ? 'text-red-600' : 
+                      passwordStrength.strength <= 3 ? 'text-yellow-600' : 
+                      'text-green-600'
+                    }`}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-neutral-100 rounded-full overflow-hidden flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`flex-1 transition-all duration-300 ${
+                          i < passwordStrength.strength ? passwordStrength.color : 'bg-neutral-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                 Підтвердіть пароль
               </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Повторіть пароль"
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 border-2 border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                  placeholder="Повторіть пароль"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              
+              {/* Індикатор співпадіння паролів */}
+              {confirmPassword && (
+                <div className="mt-2 flex items-center gap-2 text-sm">
+                  {password === confirmPassword ? (
+                    <>
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600 font-medium">Паролі співпадають</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="w-4 h-4 text-red-600" />
+                      <span className="text-red-600 font-medium">Паролі не співпадають</span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50"
+              className="w-full bg-accent-600 text-white py-3.5 px-4 rounded-xl font-semibold hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl active:scale-95"
             >
               {loading ? 'Реєстрація...' : 'Зареєструватись'}
             </button>
