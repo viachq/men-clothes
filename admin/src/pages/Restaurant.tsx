@@ -31,8 +31,20 @@ export default function Restaurant() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.put('/admin/restaurant', null, { params: formData });
+      const response = await api.put('/admin/restaurant', null, { params: formData });
+      // Update state with response data immediately
+      if (response.data && response.data.id) {
+        setRestaurant(response.data);
+        setFormData({
+          name: response.data.name || '',
+          description: response.data.description || '',
+          address: response.data.address || '',
+          phone: response.data.phone || '',
+          opening_hours: response.data.opening_hours || '',
+        });
+      }
       alert('Restaurant updated successfully!');
+      // Also refetch to ensure cache is cleared
       fetchRestaurant();
     } catch (error) {
       console.error('Failed to update restaurant:', error);

@@ -29,17 +29,35 @@ export default function Cart() {
       const cart = response.data;
       
       // Fetch menu item details for each cart item
+      // Filter out items where menu item no longer exists
       const itemsWithDetails = await Promise.all(
         cart.items.map(async (item: CartItem) => {
-          const menuResponse = await api.get(`/menu/${item.menu_item_id}`);
-          return {
-            ...item,
-            menu_item: menuResponse.data,
-          };
+          try {
+            const menuResponse = await api.get(`/menu/${item.menu_item_id}`);
+            return {
+              ...item,
+              menu_item: menuResponse.data,
+            };
+          } catch (error: any) {
+            // If menu item not found (404), skip this cart item
+            if (error.response?.status === 404) {
+              console.warn(`Menu item ${item.menu_item_id} not found, removing from cart`);
+              // Optionally remove invalid cart item from backend
+              try {
+                await api.delete(`/cart/me/items/${item.id}`);
+              } catch (deleteError) {
+                console.error('Failed to remove invalid cart item:', deleteError);
+              }
+              return null;
+            }
+            throw error;
+          }
         })
       );
       
-      setCartItems(itemsWithDetails);
+      // Filter out null values (items with missing menu items)
+      const validItems = itemsWithDetails.filter((item): item is CartItemWithDetails => item !== null);
+      setCartItems(validItems);
     } catch (error) {
       console.error('Failed to fetch cart:', error);
     } finally {

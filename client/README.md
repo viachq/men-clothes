@@ -55,7 +55,12 @@ npm run dev
 
 ## 🔗 Залежності від Backend
 
-Backend має працювати на `http://localhost:8000`
+Backend сервіси мають працювати на:
+- Auth Service: `http://localhost:8001`
+- Catalog Service: `http://localhost:8002`
+- Order Service: `http://localhost:8003`
+
+Фронтенд автоматично визначає який сервіс обробляє кожен endpoint.
 
 Використовувані API endpoints:
 - `POST /auth/register` - Реєстрація

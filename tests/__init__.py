@@ -1,4 +1,0 @@
-"""
-Backend unit tests package.
-"""
-

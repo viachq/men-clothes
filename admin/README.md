@@ -46,9 +46,11 @@ The app will be available at `http://localhost:5173`
 
 ## API Configuration
 
-Backend API URL is configured in `src/api/client.ts`:
-```typescript
-const API_URL = 'http://localhost:8000';
-```
+Backend services URLs are configured in `src/api/client.ts`:
+- Auth Service: `http://localhost:8001`
+- Catalog Service: `http://localhost:8002`
+- Order Service: `http://localhost:8003`
 
-Make sure your backend is running before starting the admin panel.
+The frontend automatically routes requests to the correct service based on the endpoint path.
+
+Make sure all backend services are running before starting the admin panel.
