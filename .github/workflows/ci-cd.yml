@@ -140,11 +140,25 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
+      - name: Set build context and Dockerfile paths
+        id: paths
+        run: |
+          if [ "${{ matrix.service }}" == "client-frontend" ]; then
+            echo "context=./client" >> $GITHUB_OUTPUT
+            echo "dockerfile=./client/Dockerfile" >> $GITHUB_OUTPUT
+          elif [ "${{ matrix.service }}" == "admin-frontend" ]; then
+            echo "context=./admin" >> $GITHUB_OUTPUT
+            echo "dockerfile=./admin/Dockerfile" >> $GITHUB_OUTPUT
+          else
+            echo "context=./services/${{ matrix.service }}" >> $GITHUB_OUTPUT
+            echo "dockerfile=./services/${{ matrix.service }}/Dockerfile" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./services/${{ matrix.service }}
-          file: ./services/${{ matrix.service }}/Dockerfile
+          context: ${{ steps.paths.outputs.context }}
+          file: ${{ steps.paths.outputs.dockerfile }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
