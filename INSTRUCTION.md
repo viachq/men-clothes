@@ -79,8 +79,7 @@ Swagger документація доступна на `/docs` кожного с
 
 1. Docker - Dockerfile для кожного сервісу
 2. docker-compose.yml - для локальної розробки
-3. CI/CD pipeline - GitHub Actions або GitLab CI
-4. Kubernetes manifests - Deployment, Service, ConfigMap, Secret, Ingress
+3. Kubernetes manifests - Deployment, Service, ConfigMap, Secret, Ingress
 
 ## Технології
 
