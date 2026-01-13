@@ -38,20 +38,18 @@ jobs:
       - name: Lint Python code with flake8
         run: |
           # Only check for critical errors (syntax errors, undefined names)
-          set +e
           flake8 services/auth-service/backend --count --select=E9,F63,F7,F82 --show-source --statistics || echo "⚠️ Lint warnings found (non-blocking)"
           flake8 services/catalog-service/backend --count --select=E9,F63,F7,F82 --show-source --statistics || echo "⚠️ Lint warnings found (non-blocking)"
           flake8 services/order-service/backend --count --select=E9,F63,F7,F82 --show-source --statistics || echo "⚠️ Lint warnings found (non-blocking)"
-          exit 0
+        continue-on-error: true
 
       - name: Check code formatting with black
         run: |
           # Check formatting but don't fail the build
-          set +e
           black --check services/auth-service/backend || echo "⚠️ Formatting issues found (non-blocking)"
           black --check services/catalog-service/backend || echo "⚠️ Formatting issues found (non-blocking)"
           black --check services/order-service/backend || echo "⚠️ Formatting issues found (non-blocking)"
-          exit 0
+        continue-on-error: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
