@@ -9,12 +9,14 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+# Install uv
+RUN pip install --no-cache-dir uv
+
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Create virtual environment and install dependencies
-RUN python -m venv /app/venv && \
-    /app/venv/bin/pip install --upgrade pip && \
+# Create virtual environment and install dependencies using uv
+RUN uv venv /app/venv && \
     /app/venv/bin/pip install --no-cache-dir -r requirements.txt
 ENV PATH="/app/venv/bin:$PATH"
 
