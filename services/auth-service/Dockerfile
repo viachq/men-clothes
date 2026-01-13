@@ -12,13 +12,13 @@ WORKDIR /app
 # Install uv
 RUN pip install --no-cache-dir uv
 
-# Create virtual environment
-RUN uv venv /app/venv
-ENV PATH="/app/venv/bin:$PATH"
-
-# Copy requirements and install dependencies using uv (into venv)
+# Copy requirements first for better caching
 COPY requirements.txt .
-RUN uv pip install -r requirements.txt
+
+# Create virtual environment and install dependencies using uv
+RUN uv venv /app/venv && \
+    /app/venv/bin/pip install --no-cache-dir -r requirements.txt
+ENV PATH="/app/venv/bin:$PATH"
 
 # === Final stage: Runtime image ===
 FROM python:3.13-slim

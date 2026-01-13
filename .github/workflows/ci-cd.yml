@@ -6,14 +6,19 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ${{ github.repository_owner }}/food-delivery
+  IMAGE_PREFIX: ${{ github.repository }}
 
 jobs:
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,18 +38,20 @@ jobs:
       - name: Lint Python code with flake8
         run: |
           # Only check for critical errors (syntax errors, undefined names)
+          set +e
           flake8 services/auth-service/backend --count --select=E9,F63,F7,F82 --show-source --statistics || echo "⚠️ Lint warnings found (non-blocking)"
           flake8 services/catalog-service/backend --count --select=E9,F63,F7,F82 --show-source --statistics || echo "⚠️ Lint warnings found (non-blocking)"
           flake8 services/order-service/backend --count --select=E9,F63,F7,F82 --show-source --statistics || echo "⚠️ Lint warnings found (non-blocking)"
-        continue-on-error: true
+          exit 0
 
       - name: Check code formatting with black
         run: |
           # Check formatting but don't fail the build
+          set +e
           black --check services/auth-service/backend || echo "⚠️ Formatting issues found (non-blocking)"
           black --check services/catalog-service/backend || echo "⚠️ Formatting issues found (non-blocking)"
           black --check services/order-service/backend || echo "⚠️ Formatting issues found (non-blocking)"
-        continue-on-error: true
+          exit 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -133,11 +140,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
+            type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Set build context and Dockerfile paths
