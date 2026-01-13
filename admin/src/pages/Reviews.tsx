@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
 import type { Review } from '../types';
-import { Trash2, Star, TrendingUp, Users, MessageCircle } from 'lucide-react';
+import { Trash2, Star, TrendingUp, MessageCircle } from 'lucide-react';
 import Card from '../components/ui/Card';
-import Badge from '../components/ui/Badge';
 
 export default function Reviews() {
   const [reviews, setReviews] = useState<Review[]>([]);

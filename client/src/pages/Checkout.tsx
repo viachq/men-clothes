@@ -47,7 +47,7 @@ export default function Checkout() {
         orderData.delivery_time = deliveryTime;
       }
 
-      const response = await api.post('/orders', orderData);
+      await api.post('/orders', orderData);
       
       setSuccess(true);
       setTimeout(() => {

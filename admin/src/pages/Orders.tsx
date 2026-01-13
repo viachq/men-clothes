@@ -3,8 +3,6 @@ import api from '../api/client';
 import type { Order, OrderDetails } from '../types';
 import { Eye, Package, Clock, CheckCircle, XCircle, Truck, LayoutGrid, Table as TableIcon } from 'lucide-react';
 import KanbanBoard from '../components/KanbanBoard';
-import Badge from '../components/ui/Badge';
-import Button from '../components/ui/Button';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800',

@@ -4,7 +4,7 @@ import type { Restaurant as RestaurantType } from '../types';
 import { Store, Save } from 'lucide-react';
 
 export default function Restaurant() {
-  const [restaurant, setRestaurant] = useState<RestaurantType | null>(null);
+  const [, setRestaurant] = useState<RestaurantType | null>(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
 import type { Category, MenuItem } from '../types';
-import { Plus, Edit, Trash2, FolderOpen, Package, DollarSign, TrendingUp } from 'lucide-react';
+import { Plus, Edit, Trash2, FolderOpen } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';

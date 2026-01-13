@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
 import type { MenuItem, Category } from '../types';
-import { Plus, Edit, Trash2, TrendingUp, ShoppingCart, DollarSign } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import Card from '../components/ui/Card';
-import Badge from '../components/ui/Badge';
-import Button from '../components/ui/Button';
 
 interface MenuItemStats {
   id: number;
@@ -78,7 +76,7 @@ export default function Menu() {
       }
       fetchItems();
       setModalOpen(false);
-      setFormData({ name: '', description: '', price: 0, image_url: '' });
+      setFormData({ name: '', description: '', price: 0, category_id: null, image_url: '' });
       setEditingItem(null);
     } catch (error) {
       console.error('Failed to save item:', error);
@@ -118,11 +116,6 @@ export default function Menu() {
     ? items.filter((item) => item.category_id === categoryFilter)
     : items;
 
-  const getCategoryName = (categoryId: number | null) => {
-    if (!categoryId) return 'No category';
-    const category = categories.find((c) => c.id === categoryId);
-    return category ? category.name : 'Unknown';
-  };
 
   return (
     <div className="max-w-7xl mx-auto">

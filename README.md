@@ -56,7 +56,65 @@ food-delivery-microservices/
 - Node.js 18+ та npm
 - Git
 
+**Альтернатива:** Docker та Docker Compose (для запуску через контейнери)
+
 ## Інструкція з розгортання
+
+### Варіант 1: Запуск через Docker (Рекомендовано)
+
+Найпростіший спосіб запустити всі сервіси:
+
+```bash
+# Запуск всіх сервісів
+docker-compose up -d
+
+# Перегляд логів
+docker-compose logs -f
+
+# Зупинка
+docker-compose down
+```
+
+Детальна інструкція: [DOCKER.md](./DOCKER.md)
+
+**Сервіси будуть доступні:**
+- Auth Service: http://localhost:8001 (docs: http://localhost:8001/docs)
+- Catalog Service: http://localhost:8002 (docs: http://localhost:8002/docs)
+- Order Service: http://localhost:8003 (docs: http://localhost:8003/docs)
+
+### Варіант 3: Запуск в Kubernetes
+
+Для розгортання в Kubernetes кластер:
+
+```bash
+# Швидкий деплой (Linux/Mac)
+cd k8s
+./deploy.sh
+
+# Або Windows
+cd k8s
+deploy.bat
+
+# З Ingress
+./deploy.sh --with-ingress
+```
+
+Детальна інструкція: [k8s/README.md](./k8s/README.md)
+
+**Вимоги:**
+- Kubernetes кластер (minikube, k3s, kind, або cloud)
+- kubectl встановлений
+- Docker images зібрані
+
+**Компоненти:**
+- ✅ Deployment (2 replicas для кожного сервісу)
+- ✅ Service (ClusterIP)
+- ✅ ConfigMap (конфігурація)
+- ✅ Secret (JWT, Telegram токени)
+- ✅ Ingress (для доступу)
+- ✅ Health checks (liveness/readiness probes)
+
+### Варіант 2: Локальний запуск
 
 ### 1. Клонування репозиторію
 
@@ -229,6 +287,19 @@ Swagger документація доступна на `/docs` кожного с
 ### Зміни в моделях
 
 При зміні моделей бази даних, SQLite автоматично оновить структуру. Для production середовища рекомендується використовувати міграції (наприклад, Alembic).
+
+## Kubernetes Deployment
+
+Проєкт включає повний набір Kubernetes manifests для розгортання в кластер:
+
+- **Deployment** - для кожного сервісу (2 replicas)
+- **Service** - ClusterIP для внутрішньої комунікації
+- **ConfigMap** - для конфігурацій
+- **Secret** - для чутливих даних (JWT, Telegram)
+- **Ingress** - для зовнішнього доступу
+- **Health Checks** - liveness та readiness probes
+
+Детальна інструкція: [k8s/README.md](./k8s/README.md)
 
 ## Відомі обмеження
 
