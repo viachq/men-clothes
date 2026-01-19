@@ -21,6 +21,11 @@ __pycache__/
 # Environment variables
 .env
 .env.local
+
+# Kubeconfig files (contain sensitive data)
+kubeconfig*.txt
+kubeconfig*.yaml
+*.kubeconfig
 .env.*.local
 
 # IDE
