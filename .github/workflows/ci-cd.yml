@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/YOUR_GITHUB_USERNAME/ippt-microservices
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/ippt-microservices
 
 jobs:
   # 1. Lint - Check code quality for all services
