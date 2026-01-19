@@ -1,5 +1,7 @@
 name: Catalog Service Tests
 
+# This workflow runs ONLY when catalog-service files are changed
+# It's separate from main CI/CD pipeline for faster feedback on service-specific changes
 on:
   push:
     branches: [ main, develop ]
@@ -11,6 +13,7 @@ on:
     paths:
       - 'services/catalog-service/**'
       - '.github/workflows/catalog-service-tests.yml'
+  workflow_dispatch:
 
 jobs:
   lint:

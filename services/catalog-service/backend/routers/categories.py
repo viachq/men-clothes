@@ -8,13 +8,6 @@ from backend.models.category import Category
 router = APIRouter(prefix="/categories", tags=["categories"])
 
 
-def clear_categories_cache():
-    """Clear cache for list_categories. Call this after creating/updating/deleting categories."""
-    if hasattr(list_categories, '_cache'):
-        list_categories._cache = None
-        list_categories._cache_time = 0
-
-
 @router.get("/")
 def list_categories(db: Session = Depends(get_db)):
     """Get all categories (cached for 5 minutes)."""
@@ -32,6 +25,13 @@ def list_categories(db: Session = Depends(get_db)):
     
     cats = list_categories._cache
     return [{"id": c.id, "name": c.name} for c in cats]
+
+
+def clear_categories_cache():
+    """Clear cache for list_categories. Call this after creating/updating/deleting categories."""
+    if hasattr(list_categories, '_cache'):
+        list_categories._cache = None
+        list_categories._cache_time = 0
 
 
 # Removed - MenuItem doesn't have category_id in simplified version
