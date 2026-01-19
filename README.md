@@ -175,43 +175,6 @@ git push -u origin main
    - Завантажити з https://git-scm.com/download/win
    - Або використати GitHub Desktop
 
-##### Linux (Ubuntu/Debian)
-
-```bash
-# Python 3.11+
-sudo apt update
-sudo apt install python3.11 python3.11-venv python3-pip
-
-# Node.js 18+
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# Docker
-sudo apt install docker.io docker-compose
-sudo usermod -aG docker $USER
-# Потрібно вийти та зайти знову
-
-# Git
-sudo apt install git
-```
-
-##### macOS
-
-```bash
-# Встановити Homebrew якщо немає
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Python
-brew install python@3.13
-
-# Node.js
-brew install node@20
-
-# Docker Desktop
-brew install --cask docker
-
-# Git (зазвичай вже встановлений)
-```
 
 #### Крок 4: Перевірити встановлення
 
@@ -511,58 +474,6 @@ npm run dev
 .\START.bat
 ```
 
-#### Linux/macOS
-
-1. **Встановити залежності для backend:**
-
-```bash
-# Для кожного сервісу
-cd services/auth-service
-python3 -m pip install -r requirements.txt
-python3 -m pip install pytest pytest-cov
-
-cd ../catalog-service
-python3 -m pip install -r requirements.txt
-python3 -m pip install pytest pytest-cov
-
-cd ../order-service
-python3 -m pip install -r requirements.txt
-python3 -m pip install pytest pytest-cov
-```
-
-2. **Запустити backend сервіси (в окремих терміналах):**
-
-```bash
-# Термінал 1 - Auth Service
-cd services/auth-service
-export PYTHONPATH=$(pwd)
-python3 -m uvicorn backend.main:app --reload --port 8001
-
-# Термінал 2 - Catalog Service
-cd services/catalog-service
-export PYTHONPATH=$(pwd)
-python3 -m uvicorn backend.main:app --reload --port 8002
-
-# Термінал 3 - Order Service
-cd services/order-service
-export PYTHONPATH=$(pwd)
-python3 -m uvicorn backend.main:app --reload --port 8003
-```
-
-3. **Встановити та запустити frontend:**
-
-```bash
-# Admin Frontend
-cd admin
-npm install
-npm run dev
-
-# Client Frontend (в іншому терміналі)
-cd client
-npm install
-npm run dev
-```
-
 ### Доступ до сервісів
 
 Після запуску всі сервіси будуть доступні:
@@ -674,11 +585,9 @@ kubectl cluster-info
 
 #### 2. Налаштувати Docker для minikube
 
-```bash
+```powershell
 # Налаштувати Docker для використання minikube registry
-eval $(minikube docker-env)  # Linux/macOS
-# Або для PowerShell:
-minikube docker-env | Invoke-Expression  # Windows PowerShell
+minikube docker-env | Invoke-Expression
 ```
 
 #### 3. Зібрати Docker images
@@ -962,11 +871,9 @@ pytest backend/tests/ -v --cov=backend --cov-report=term-missing --cov-fail-unde
 
 Після запуску тестів, HTML звіт генерується в `htmlcov/`:
 
-```bash
+```powershell
 # Відкрити в браузері
-open htmlcov/index.html  # macOS
-start htmlcov/index.html  # Windows
-xdg-open htmlcov/index.html  # Linux
+start htmlcov/index.html
 ```
 
 ## API Документація
@@ -987,34 +894,32 @@ xdg-open htmlcov/index.html  # Linux
 ### Проблеми з Docker
 
 **Помилка: "Cannot connect to Docker daemon"**
-```bash
+```powershell
 # Перевірити що Docker Desktop запущений
-# Windows: запустити Docker Desktop
-# Linux: sudo systemctl start docker
+# Запустити Docker Desktop з меню Start або з ярлика
 ```
 
 **Помилка: "Port already in use"**
-```bash
+```powershell
 # Знайти процес що використовує порт
-# Windows:
 netstat -ano | findstr :8001
 
-# Linux/macOS:
-lsof -i :8001
+# Зупинити процес (замініть PID на номер процесу з попередньої команди)
+taskkill /PID <номер_процесу> /F
 
-# Зупинити процес або змінити порт в docker-compose.yml
+# Або змінити порт в docker-compose.yml
 ```
 
 ### Проблеми з Python залежностями
 
 **Помилка: "ModuleNotFoundError"**
-```bash
+```powershell
 # Переконатися що PYTHONPATH встановлено правильно
-# Windows:
-set PYTHONPATH=%CD%
+$env:PYTHONPATH = (Get-Location).Path
 
-# Linux/macOS:
-export PYTHONPATH=$(pwd)
+# Або встановити для конкретного сервісу
+cd services/auth-service
+$env:PYTHONPATH = (Get-Location).Path
 ```
 
 ### Проблеми з Node.js
@@ -1030,12 +935,12 @@ npm install
 ### Проблеми з Kubernetes
 
 **Помилка: "ImagePullBackOff"**
-```bash
+```powershell
 # Перевірити що образи зібрані та доступні
 kubectl describe pod <pod-name> -n ippt-microservices
 
 # Для minikube - переконатися що використовується minikube registry
-eval $(minikube docker-env)
+minikube docker-env | Invoke-Expression
 ```
 
 **Помилка: "Connection refused"**
