@@ -1,5 +1,5 @@
 """
-Admin menu management endpoints.
+Admin product management endpoints.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -8,22 +8,20 @@ from backend.database import get_db
 from backend.models.menu_item import MenuItem
 from backend.deps import require_roles
 from backend.core.enums import UserRole
-from backend.core.config import DEFAULT_RESTAURANT_ID
 from backend.schemas.menu import MenuItemCreate, MenuItemUpdate, MenuItemRead
 
 
-router = APIRouter(prefix="/admin/menu", tags=["admin:menu"])
+router = APIRouter(prefix="/admin/products", tags=["admin:products"])
 
 
 @router.post("", response_model=MenuItemRead)
 def create_item(
     payload: MenuItemCreate,
     db: Session = Depends(get_db),
-    _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.RESTAURANT_ADMIN))
+    _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.MANAGER))
 ):
-    """Create menu item for default restaurant."""
+    """Create product."""
     item = MenuItem(
-        restaurant_id=DEFAULT_RESTAURANT_ID,
         name=payload.name,
         description=payload.description,
         price=payload.price,
@@ -34,9 +32,9 @@ def create_item(
     db.commit()
     db.refresh(item)
     
-    # Clear cache for menu items after create
-    from backend.routers.menu import clear_menu_items_cache
-    clear_menu_items_cache()
+    # Clear cache for products after create
+    from backend.routers.menu import clear_products_cache
+    clear_products_cache()
     
     return item
 
@@ -46,7 +44,7 @@ def update_item(
     item_id: int,
     payload: MenuItemUpdate,
     db: Session = Depends(get_db),
-    _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.RESTAURANT_ADMIN))
+    _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.MANAGER))
 ):
     """Update menu item."""
     item = db.query(MenuItem).filter(MenuItem.id == item_id).first()
@@ -67,9 +65,9 @@ def update_item(
     db.commit()
     db.refresh(item)
     
-    # Clear cache for menu items after update
-    from backend.routers.menu import clear_menu_items_cache
-    clear_menu_items_cache()
+    # Clear cache for products after update
+    from backend.routers.menu import clear_products_cache
+    clear_products_cache()
     
     return item
 
@@ -78,7 +76,7 @@ def update_item(
 def delete_item(
     item_id: int,
     db: Session = Depends(get_db),
-    _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.RESTAURANT_ADMIN))
+    _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.MANAGER))
 ):
     """Delete menu item."""
     item = db.query(MenuItem).filter(MenuItem.id == item_id).first()
@@ -88,8 +86,8 @@ def delete_item(
     db.delete(item)
     db.commit()
     
-    # Clear cache for menu items after delete
-    from backend.routers.menu import clear_menu_items_cache
-    clear_menu_items_cache()
+    # Clear cache for products after delete
+    from backend.routers.menu import clear_products_cache
+    clear_products_cache()
     
     return {"message": "Menu item deleted"}

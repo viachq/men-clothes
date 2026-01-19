@@ -1,6 +1,6 @@
 # Kubernetes Deployment Guide
 
-Цей каталог містить Kubernetes manifests для розгортання Food Delivery Microservices.
+Цей каталог містить Kubernetes manifests для розгортання Men's Clothes Store Microservices.
 
 ## Структура
 

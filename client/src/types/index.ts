@@ -3,7 +3,6 @@ export interface MenuItem {
   name: string;
   description: string | null;
   price: number;
-  restaurant_id: number;
   category_id: number | null;
   image_url: string | null;
 }
@@ -33,7 +32,7 @@ export interface Order {
   payment_method: string;
 }
 
-export interface Restaurant {
+export interface Store {
   id: number;
   name: string;
   description: string;

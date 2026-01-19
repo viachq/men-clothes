@@ -14,6 +14,16 @@ from backend.core.security import hash_password
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+@router.get("/me")
+def get_current_user_info(current_user: User = Depends(get_current_user)):
+    """Get current user profile."""
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "role": current_user.role
+    }
+
+
 @router.get("/{user_id}")
 def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
     """Get user by ID (for inter-service communication)."""
@@ -37,16 +47,6 @@ def get_user_by_username(username: str, db: Session = Depends(get_db)):
         "id": user.id,
         "username": user.username,
         "role": user.role
-    }
-
-
-@router.get("/me")
-def get_current_user_info(current_user: User = Depends(get_current_user)):
-    """Get current user profile."""
-    return {
-        "id": current_user.id,
-        "username": current_user.username,
-        "role": current_user.role
     }
 
 

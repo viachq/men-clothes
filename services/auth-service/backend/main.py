@@ -46,9 +46,9 @@ def init_default_users():
                 "role": UserRole.SYSTEM_ADMIN,
             },
             {
-                "username": "restaurant_admin",
-                "password": "restaurant_admin",
-                "role": UserRole.RESTAURANT_ADMIN,
+                "username": "manager",
+                "password": "manager",
+                "role": UserRole.MANAGER,
             },
             {
                 "username": "client",

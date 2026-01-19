@@ -13,9 +13,8 @@ function getServiceUrl(path: string): string {
   }
   
   // Catalog Service
-  if (path.startsWith('/restaurant') || path.startsWith('/admin/restaurant') ||
-      path.startsWith('/categories') || path.startsWith('/admin/categories') ||
-      path.startsWith('/menu') || path.startsWith('/admin/menu')) {
+  if (path.startsWith('/categories') || path.startsWith('/admin/categories') ||
+      path.startsWith('/products') || path.startsWith('/admin/products')) {
     return CATALOG_SERVICE_URL;
   }
   
@@ -52,9 +51,12 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Don't redirect on 401 for auth endpoints (login/register) - these are validation errors
+    const isAuthEndpoint = error.config?.url?.includes('/auth/login') || error.config?.url?.includes('/auth/register');
+    
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('client_token');
-      window.location.href = '/login';
+      window.location.href = '/';
     }
     return Promise.reject(error);
   }

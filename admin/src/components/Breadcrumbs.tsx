@@ -4,10 +4,8 @@ import { ChevronRight, Home } from 'lucide-react';
 const routeNames: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/orders': 'Замовлення',
-  '/menu': 'Меню',
+  '/menu': 'Товари',
   '/categories': 'Категорії',
-  '/restaurant': 'Ресторан',
-  '/reviews': 'Відгуки',
   '/users': 'Користувачі',
 };
 

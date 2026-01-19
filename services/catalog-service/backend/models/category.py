@@ -11,4 +11,3 @@ class Category(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False, index=True)
-    description = Column(String, nullable=True)

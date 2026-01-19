@@ -14,7 +14,6 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     # External IDs (no ForeignKey - these reference entities in other services)
     user_id = Column(Integer, nullable=False, index=True)  # References auth-service users
-    restaurant_id = Column(Integer, nullable=False, index=True)  # References catalog-service restaurant_info
     status = Column(String, default=OrderStatus.PENDING.value, nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

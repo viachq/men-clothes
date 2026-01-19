@@ -2,7 +2,7 @@
 cls
 echo.
 echo ============================================
-echo  Starting Food Delivery Microservices
+echo  Starting Men's Clothes Store Microservices
 echo ============================================
 echo.
 

@@ -13,15 +13,15 @@ function getServiceUrl(path: string): string {
   }
   
   // Catalog Service
-  if (path.startsWith('/restaurant') || path.startsWith('/admin/restaurant') ||
+  if (path.startsWith('/store') ||
       path.startsWith('/categories') || path.startsWith('/admin/categories') ||
-      path.startsWith('/menu') || path.startsWith('/admin/menu')) {
+      path.startsWith('/products') || path.startsWith('/admin/products')) {
     return CATALOG_SERVICE_URL;
   }
   
   // Order Service
   if (path.startsWith('/cart') || path.startsWith('/orders') || path.startsWith('/admin/orders') ||
-      path.startsWith('/payments') || path.startsWith('/reviews') || path.startsWith('/admin/stats')) {
+      path.startsWith('/payments') || path.startsWith('/admin/stats')) {
     return ORDER_SERVICE_URL;
   }
   

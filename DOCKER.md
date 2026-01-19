@@ -1,4 +1,4 @@
-# Docker Setup для Food Delivery Microservices
+# Docker Setup для Men's Clothes Store Microservices
 
 ## Огляд
 

@@ -2,15 +2,11 @@ import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-do
 import { useEffect, useState } from 'react';
 import type { MenuItem, Category } from './types';
 import api from './api/client';
-import { ShoppingCart, User, Package, Home, LogOut, Info, Search, X } from 'lucide-react';
+import { ShoppingCart, User, Package, Home, LogOut, Search, X, ChevronRight, LayoutGrid, Eye, EyeOff } from 'lucide-react';
 import { useDebounce } from './hooks/useDebounce';
 import { showSuccess, showError } from './utils/notifications';
-import Login from './pages/Login';
-import Register from './pages/Register';
 import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
-import About from './pages/About';
 
 function Header() {
   const navigate = useNavigate();
@@ -18,12 +14,33 @@ function Header() {
   const user = localStorage.getItem('client_user');
   const username = user ? JSON.parse(user).username : '';
   const [cartCount, setCartCount] = useState(0);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
   useEffect(() => {
     if (isLoggedIn) {
       fetchCartCount();
+      
+      // Оновлюємо кошик кожні 2 секунди для динамічного оновлення
+      const interval = setInterval(fetchCartCount, 2000);
+      return () => clearInterval(interval);
     }
   }, [isLoggedIn]);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-menu-container')) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    if (userMenuOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [userMenuOpen, isLoggedIn]);
 
   const fetchCartCount = async () => {
     try {
@@ -38,58 +55,83 @@ function Header() {
     localStorage.removeItem('client_token');
     localStorage.removeItem('client_user');
     navigate('/');
+    setUserMenuOpen(false);
   };
 
   return (
-    <header className="glass shadow-sm sticky top-0 z-50 border-b border-neutral-200">
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="text-3xl font-extrabold text-gradient flex items-center gap-2 hover:scale-105 transition-transform">
-            🍕 Food Delivery
+    <header className="bg-white/95 backdrop-blur-sm sticky top-0 z-50 border-b border-neutral-200/50 transition-all duration-300">
+      <div className="max-w-[1920px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20">
+        <div className="flex items-center justify-between h-14 md:h-16">
+          {/* Center - Logo */}
+          <Link to="/" className="absolute left-1/2 -translate-x-1/2 text-lg md:text-xl font-black text-black tracking-[0.08em] hover:opacity-70 transition-opacity duration-200 uppercase">
+            Men's Clothes
           </Link>
-          <nav className="flex gap-2 md:gap-3 items-center">
-            <Link to="/" className="text-neutral-700 hover:text-red-600 font-medium flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all">
-              <Home className="w-5 h-5" />
-              <span className="hidden md:inline">Меню</span>
+
+          {/* Right Icons - All grouped together */}
+          <nav className="flex items-center gap-3 md:gap-4 ml-auto">
+            <Link to="/" className="p-2 text-neutral-900 hover:text-black transition-colors duration-200" title="Каталог">
+              <LayoutGrid className="w-5 h-5 md:w-6 md:h-6" />
             </Link>
-            <Link to="/about" className="text-neutral-700 hover:text-red-600 font-medium flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all">
-              <Info className="w-5 h-5" />
-              <span className="hidden md:inline">Про нас</span>
-            </Link>
-            <Link to="/cart" className="text-neutral-700 hover:text-red-600 font-medium flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all relative">
-              <ShoppingCart className="w-5 h-5" />
-              <span className="hidden md:inline">Кошик</span>
+              <div className="relative user-menu-container">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="relative p-2 text-neutral-600 hover:text-black transition-colors duration-200"
+                  aria-label="User menu"
+                >
+                  <User className="w-5 h-5 md:w-6 md:h-6" />
+                {isLoggedIn && cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-scale-in">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+                {userMenuOpen && (
+                isLoggedIn ? (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-neutral-200 shadow-xl rounded-sm overflow-hidden z-50 animate-scale-in">
+                    <Link
+                      to="/cart"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center justify-between px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:text-black transition-colors duration-200"
+                    >
+                      <div className="flex items-center gap-3">
+                        <ShoppingCart className="w-4 h-4" />
+                        <span>Кошик</span>
+                      </div>
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                        <span className="w-5 h-5 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
             </Link>
-            {isLoggedIn ? (
-              <>
-                <Link to="/orders" className="text-neutral-700 hover:text-red-600 font-medium flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all">
-                  <Package className="w-5 h-5" />
-                  <span className="hidden md:inline">Замовлення</span>
+                    <Link
+                      to="/orders"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:text-black transition-colors duration-200 border-t border-neutral-100"
+                    >
+                      <Package className="w-4 h-4" />
+                      <span>Мої замовлення</span>
                 </Link>
-                <div className="flex items-center gap-3 ml-2">
-                  <span className="text-sm font-medium text-neutral-700 bg-neutral-100 px-3 py-1.5 rounded-full hidden md:inline">
-                    {username}
-                  </span>
                   <button
                     onClick={handleLogout}
-                    className="text-neutral-700 hover:text-red-600 font-medium flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-all"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:text-black transition-colors duration-200 border-t border-neutral-100"
                   >
-                    <LogOut className="w-5 h-5" />
-                    <span className="hidden md:inline">Вихід</span>
+                      <LogOut className="w-4 h-4" />
+                      <span>Вихід</span>
                   </button>
-                </div>
-              </>
+              </div>
             ) : (
-              <Link to="/login" className="bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95">
-                <User className="w-5 h-5" />
-                <span className="hidden md:inline">Вхід</span>
-              </Link>
+                  <AuthDropdown
+                  mode={authMode}
+                  onSwitchMode={(mode) => setAuthMode(mode)}
+                  onSuccess={() => {
+                      setUserMenuOpen(false);
+                    navigate('/');
+                    window.location.reload();
+                  }}
+                />
+                )
             )}
+            </div>
           </nav>
         </div>
       </div>
@@ -100,120 +142,28 @@ function Header() {
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="min-h-screen bg-white overflow-x-hidden w-full">
         <Header />
 
         {/* Main Content */}
         <main>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
             <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/checkout" element={<Cart />} />
             <Route path="/orders" element={<Orders />} />
-            <Route path="/about" element={<About />} />
           </Routes>
         </main>
 
         {/* Липкий кошик для мобільних (тільки на головній сторінці) */}
         <FloatingCart />
 
-        {/* Footer */}
-        <footer className="bg-gradient-to-br from-neutral-50 via-white to-neutral-100 border-t-2 border-neutral-200 mt-24">
-          <div className="max-w-7xl mx-auto px-4 py-12">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-8">
-              {/* Про нас */}
-              <div>
-                <h3 className="text-xl font-bold mb-4 text-neutral-900">
-                  Про нас
-                </h3>
-                <p className="text-neutral-600 text-sm leading-relaxed">
-                  Food Delivery - ваш надійний партнер у доставці смачної їжі швидко та зручно.
-                </p>
-              </div>
-              
-              {/* Навігація */}
-              <div>
-                <h3 className="text-xl font-bold mb-4 text-neutral-900">
-                  Навігація
-                </h3>
-                <ul className="space-y-3 text-sm">
-                  <li>
-                    <Link to="/" className="text-neutral-600 hover:text-red-600 transition-colors flex items-center gap-2 group">
-                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full group-hover:w-2.5 transition-all"></span>
-                      Меню
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/about" className="text-neutral-600 hover:text-red-600 transition-colors flex items-center gap-2 group">
-                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full group-hover:w-2.5 transition-all"></span>
-                      Про ресторан
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/orders" className="text-neutral-600 hover:text-red-600 transition-colors flex items-center gap-2 group">
-                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full group-hover:w-2.5 transition-all"></span>
-                      Мої замовлення
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-              
-              {/* Соціальні мережі та контакти */}
-              <div>
-                <h3 className="text-xl font-bold mb-4 text-neutral-900">
-                  Зв'яжіться з нами
-                </h3>
-                <div className="flex gap-4 mb-5">
-                  <a 
-                    href="https://facebook.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-neutral-200 hover:bg-blue-600 hover:text-white text-neutral-700 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                    aria-label="Facebook"
-                  >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                  </a>
-                  <a 
-                    href="https://instagram.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-neutral-200 hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-500 hover:text-white text-neutral-700 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                    aria-label="Instagram"
-                  >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                  </a>
-                  <a 
-                    href="https://twitter.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-neutral-200 hover:bg-blue-400 hover:text-white text-neutral-700 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                    aria-label="Twitter"
-                  >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                    </svg>
-                  </a>
-                </div>
-                <p className="text-neutral-600 text-sm mb-2 flex items-center gap-2">
-                  <span>📞</span> +380 XX XXX XXXX
-                </p>
-                <p className="text-neutral-600 text-sm flex items-center gap-2">
-                  <span>📧</span> info@fooddelivery.com
-                </p>
-              </div>
-            </div>
-            
-            <div className="border-t border-neutral-300 pt-8 text-center">
-              <p className="text-neutral-600 text-sm">
-                Food Delivery 2025 • Створено з ❤️ для любителів смачної їжі
-              </p>
-            </div>
+        {/* Footer - Minimal Nike Style */}
+        <footer className="bg-white border-t border-neutral-200 mt-20 md:mt-24">
+          <div className="max-w-[1920px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20 py-6 md:py-8">
+            <p className="text-xs text-neutral-500 text-center uppercase tracking-wide">
+              © 2025 Sport Store. Всі права захищені.
+            </p>
           </div>
         </footer>
       </div>
@@ -221,7 +171,7 @@ function App() {
   );
 }
 
-// Home Page with Menu
+// Home Page with Menu - Premium Redesign
 function HomePage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -248,7 +198,7 @@ function HomePage() {
   const fetchMenu = async (categoryId: number | null = null) => {
     try {
       const params = categoryId ? { category_id: categoryId } : {};
-      const response = await api.get('/menu/', { params });
+      const response = await api.get('/products/', { params });
       setMenuItems(response.data);
     } catch (error) {
       console.error('Failed to fetch menu:', error);
@@ -290,9 +240,7 @@ function HomePage() {
   const addToCart = async (item: MenuItem) => {
     // Check if user is logged in
     if (!localStorage.getItem('client_token')) {
-      if (confirm('Для додавання в кошик потрібно увійти. Перейти на сторінку входу?')) {
-        window.location.href = '/login';
-      }
+      showError('Для додавання в кошик потрібно увійти. Натисніть на іконку користувача для входу.');
       return;
     }
 
@@ -310,141 +258,129 @@ function HomePage() {
     }
   };
 
-  return (
-    <div className="bg-gradient-to-b from-neutral-50 to-white min-h-screen">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-red-900 to-neutral-900">
-        {/* Декоративні елементи */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-red-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-500 rounded-full blur-3xl"></div>
-        </div>
-        
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 md:py-24">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 tracking-tight text-white animate-fade-in">
-              Смачна їжа до вашого дому
-            </h1>
-            <p className="text-xl md:text-2xl text-neutral-200 max-w-2xl mx-auto leading-relaxed">
-              Обирайте з нашого меню та насолоджуйтесь швидкою доставкою
-            </p>
-          </div>
-        </div>
-      </div>
+  const filteredItems = getFilteredAndSortedItems();
+  // Featured section shows only first item if items exist and not loading
 
-      {/* Menu Section */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Пошук та сортування */}
-        <div className="mb-8 space-y-4">
-          {/* Пошук */}
+  return (
+    <div className="bg-white min-h-screen">
+      {/* Main Catalog Section with Sidebar */}
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 xl:px-16 pb-20 md:pb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8 md:gap-10 lg:gap-12 xl:gap-16">
+          
+          {/* Sidebar - Filters & Categories - Compact Design */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-20 z-40 space-y-10 animate-slide-in-left">
+              {/* Search - Compact */}
+              <div className="group">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                  <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-black transition-all duration-300 group-focus-within:scale-110" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="🔍 Шукати страви..."
-              className="w-full px-12 py-4 text-lg border-2 border-neutral-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all placeholder:text-neutral-400"
+                    placeholder="Шукати товари..."
+                    className="w-full pl-7 pr-10 py-3 text-sm bg-transparent border-b border-neutral-200 focus:border-black focus:outline-none transition-all duration-300 placeholder:text-neutral-400 focus:placeholder:text-neutral-300 font-medium"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black transition-all duration-300 hover:scale-125 active:scale-95"
+                      aria-label="Очистити пошук"
               >
-                <X className="w-5 h-5" />
+                      <X className="w-5 h-5" />
               </button>
             )}
           </div>
+              </div>
 
-          {/* Сортування та результати */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="text-neutral-600 font-medium">Сортування:</span>
+              {/* Categories - Compact Design */}
+              {categories.length > 0 && (
+                <div>
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => handleCategoryClick(null)}
+                      className={`group w-full text-left px-4 py-3 text-sm font-medium transition-all duration-300 uppercase tracking-wide relative overflow-hidden ${
+                        selectedCategory === null
+                          ? 'text-black bg-neutral-100'
+                          : 'text-neutral-500 hover:text-black hover:bg-neutral-50'
+                      }`}
+                    >
+                      <span className="relative z-10 flex items-center justify-between">
+                        <span>Всі товари</span>
+                        {selectedCategory === null && (
+                          <ChevronRight className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        )}
+                      </span>
+                      {selectedCategory === null && (
+                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+                      )}
+                    </button>
+                    {categories.map((category, idx) => (
+                      <button
+                        key={category.id}
+                        onClick={() => handleCategoryClick(category.id)}
+                        className={`group w-full text-left px-4 py-3 text-sm font-medium transition-all duration-300 uppercase tracking-wide relative overflow-hidden ${
+                          selectedCategory === category.id
+                            ? 'text-black bg-neutral-100'
+                            : 'text-neutral-500 hover:text-black hover:bg-neutral-50'
+                        }`}
+                        style={{ animationDelay: `${idx * 0.05}s` }}
+                      >
+                        <span className="relative z-10 flex items-center justify-between">
+                          <span>{category.name}</span>
+                          {selectedCategory === category.id && (
+                            <ChevronRight className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          )}
+                        </span>
+                        {selectedCategory === category.id && (
+                          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sort - Compact */}
+              <div>
+                <div className="relative">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-4 py-2 border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent font-medium text-neutral-700 cursor-pointer hover:border-neutral-300 transition-all"
+                    className="w-full px-4 py-3 text-sm border border-neutral-200 focus:ring-1 focus:ring-black focus:border-black font-medium text-neutral-900 cursor-pointer bg-white hover:border-neutral-400 transition-all duration-300 appearance-none focus:outline-none"
               >
                 <option value="name">За назвою</option>
-                <option value="price_asc">Ціна: дешевші спочатку</option>
-                <option value="price_desc">Ціна: дорожчі спочатку</option>
+                    <option value="price_asc">Ціна: від дешевих</option>
+                    <option value="price_desc">Ціна: від дорогих</option>
               </select>
+                  <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 pointer-events-none rotate-90" />
             </div>
-
-            {debouncedSearchQuery && (
-              <div className="text-sm text-neutral-600">
-                Знайдено: <span className="font-bold text-neutral-900">{getFilteredAndSortedItems().length}</span> страв
               </div>
-            )}
           </div>
-        </div>
+          </aside>
 
-        {/* Category Filter */}
-        {categories.length > 0 && (
-          <div className="mb-10">
-            <h2 className="text-2xl font-bold text-neutral-900 mb-4">Категорії</h2>
-            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
-              <button
-                onClick={() => handleCategoryClick(null)}
-                className={`px-6 py-3 rounded-2xl font-semibold transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-2 ${
-                  selectedCategory === null
-                    ? 'bg-red-600 text-white shadow-lg shadow-red-500/25 scale-105'
-                    : 'bg-white text-neutral-700 hover:bg-neutral-50 border-2 border-neutral-200 hover:border-red-300'
-                }`}
-              >
-                <span className="text-xl">🍽️</span>
-                Всі страви
-              </button>
-              {categories.map((category) => {
-                const categoryIcons: { [key: string]: string } = {
-                  'Закуски та Салати': '🥗',
-                  'Основні страви': '🍖',
-                  'Десерти': '🍰',
-                  'Напої': '🥤',
-                  'default': '🍴'
-                };
-                const icon = categoryIcons[category.name] || categoryIcons['default'];
-                
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => handleCategoryClick(category.id)}
-                    className={`px-6 py-3 rounded-2xl font-semibold transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-2 ${
-                      selectedCategory === category.id
-                        ? 'bg-red-600 text-white shadow-lg shadow-red-500/25 scale-105'
-                        : 'bg-white text-neutral-700 hover:bg-neutral-50 border-2 border-neutral-200 hover:border-red-300'
-                    }`}
-                  >
-                    <span className="text-xl">{icon}</span>
-                    {category.name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
+          {/* Main Content */}
+          <div className="min-w-0">
+            {/* Products Grid - Premium Layout */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-white rounded-3xl shadow-sm overflow-hidden border border-neutral-100">
-                <div className="w-full h-56 skeleton"></div>
-                <div className="p-6 space-y-3">
-                  <div className="h-7 skeleton w-3/4"></div>
-                  <div className="h-4 skeleton w-full"></div>
-                  <div className="h-4 skeleton w-5/6"></div>
-                  <div className="h-12 skeleton rounded-xl mt-4"></div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-5 md:gap-6 lg:gap-8">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+                  <div key={i} className="flex flex-col animate-pulse">
+                    <div className="w-full aspect-square bg-gradient-to-br from-neutral-100 to-neutral-200 mb-4 rounded-sm"></div>
+                    <div className="space-y-3">
+                      <div className="h-4 bg-neutral-100 rounded w-3/4"></div>
+                      <div className="h-5 bg-neutral-100 rounded w-1/3"></div>
                 </div>
               </div>
             ))}
           </div>
         ) : getFilteredAndSortedItems().length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-neutral-100">
-            <div className="text-6xl mb-4">😔</div>
-            <p className="text-neutral-700 text-xl mb-2 font-semibold">
-              {debouncedSearchQuery ? 'Нічого не знайдено' : 'Меню тимчасово недоступне'}
-            </p>
-            <p className="text-neutral-500">
+              <div className="text-center py-24 animate-fade-in">
+                <div className="text-7xl mb-6 animate-scale-in">😔</div>
+                <p className="text-black text-xl md:text-2xl mb-3 font-semibold">
+                  {debouncedSearchQuery ? 'Нічого не знайдено' : 'Каталог тимчасово недоступний'}
+                </p>
+                <p className="text-neutral-600 text-base md:text-lg mb-8">
               {debouncedSearchQuery
                 ? 'Спробуйте змінити запит або очистити фільтри'
                 : 'Будь ласка, зайдіть пізніше'}
@@ -452,63 +388,304 @@ function HomePage() {
             {debouncedSearchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="mt-6 inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-700 transition-all shadow-lg"
+                    className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-md font-medium hover:bg-neutral-800 transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <X className="w-5 h-5" />
                 Очистити пошук
               </button>
             )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {getFilteredAndSortedItems().map((item) => (
+            ) : !loading && filteredItems.length > 0 ? (
               <div 
-                key={item.id} 
-                className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden hover-lift flex flex-col border border-neutral-100 hover:border-red-200"
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-5 md:gap-6 lg:gap-8"
               >
-                <div className="relative overflow-hidden">
-                  {/* Gradient overlay on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-red-50/0 to-red-50/0 group-hover:from-red-50/30 group-hover:to-transparent transition-all duration-300 pointer-events-none z-10"></div>
-                  
+                {filteredItems.map((item, index) => (
+                  <div 
+                    key={item.id} 
+                    className="group flex flex-col cursor-pointer"
+                  >
+                    {/* Image Container - Premium Card */}
+                    <div className="relative overflow-hidden bg-white mb-4 aspect-square rounded-sm shadow-sm group-hover:shadow-xl transition-all duration-500">
                   {item.image_url ? (
+                        <>
                     <img 
                       src={item.image_url} 
                       alt={item.name} 
-                      className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-56 bg-gradient-to-br from-red-400 via-orange-400 to-yellow-400 flex items-center justify-center">
-                      <span className="text-white text-7xl drop-shadow-lg">🍕</span>
+                            className="w-full h-full object-cover transition-transform duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-115"
+                            loading="lazy"
+                          />
+                          {/* Premium Overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                          {/* Quick Add Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(item);
+                            }}
+                            className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 bg-white text-black px-6 py-2.5 font-black text-xs uppercase tracking-wide hover:scale-110 active:scale-95 shadow-xl"
+                          >
+                            <span className="flex items-center gap-2">
+                              <ShoppingCart className="w-4 h-4" />
+                              Додати
+                            </span>
+                          </button>
+                        </>
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
+                          <span className="text-6xl text-neutral-200 animate-float" style={{ animationDelay: `${index * 0.1}s` }}>👟</span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  
-                  {/* Price badge - новий дизайн */}
-                  <div className="absolute top-4 right-4 bg-gradient-to-br from-neutral-900/90 to-neutral-800/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-xl border border-white/10 z-20">
-                    <span className="text-xl font-bold text-white">
+
+                    {/* Content - Enhanced Typography */}
+                    <div className="flex flex-col flex-1 px-1">
+                      <h3 className="text-sm md:text-base font-semibold text-black mb-1 tracking-tight leading-snug group-hover:opacity-80 transition-opacity duration-300 line-clamp-2">
+                        {item.name}
+                      </h3>
+
+                      {item.description && (
+                        <p className="text-[11px] md:text-xs text-neutral-600 mb-1 line-clamp-2 leading-snug">
+                          {item.description}
+                        </p>
+                      )}
+
+                      <div className="mt-auto">
+                        <span className="text-base md:text-lg font-black text-black tracking-tight">
                       ₴{(item.price / 100).toFixed(0)}
                     </span>
                   </div>
                 </div>
-                
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-2xl font-bold text-neutral-900 mb-3 group-hover:text-red-600 transition-colors">
-                    {item.name}
-                  </h3>
-                  <p className="text-neutral-600 mb-6 text-sm leading-relaxed line-clamp-2 flex-1">
-                    {item.description || 'Смачна страва від нашого кухаря'}
-                  </p>
-                  <button 
-                    onClick={() => addToCart(item)}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3.5 rounded-xl transition-all font-semibold flex items-center justify-center gap-2 shadow-lg shadow-red-600/25 hover:shadow-xl hover:shadow-red-600/40 active:scale-95"
+                  </div>
+                ))}
+                </div>
+            ) : (
+              <div className="text-center py-20">
+                <p className="text-neutral-600">Немає інших товарів для відображення</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Auth Dropdown Component - Form in dropdown menu
+function AuthDropdown({ 
+  mode, 
+  onSwitchMode,
+  onSuccess 
+}: { 
+  mode: 'login' | 'register';
+  onSwitchMode: (mode: 'login' | 'register') => void;
+  onSuccess: () => void;
+}) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    // Reset form when mode changes
+    setUsername('');
+    setPassword('');
+    setConfirmPassword('');
+    setError('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  }, [mode]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (loading) return; // Запобігаємо повторній відправці
+    
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await api.post('/auth/login', { username, password });
+      localStorage.setItem('client_token', response.data.access_token);
+      localStorage.setItem('client_user', JSON.stringify(response.data.user));
+      setLoading(false);
+      // Тільки при успішному вході викликаємо onSuccess
+      onSuccess();
+    } catch (err: any) {
+      setLoading(false);
+      const errorMessage = err.response?.data?.detail || err.response?.data?.message || 'Невірний логін або пароль';
+      setError(errorMessage);
+      // НЕ викликаємо onSuccess при помилці - залишаємо dropdown відкритим
+      // НЕ перезавантажуємо сторінку
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (loading) return; // Запобігаємо повторній відправці
+    
+    setError('');
+
+    if (password !== confirmPassword) {
+      setError('Паролі не співпадають');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Пароль має бути не менше 6 символів');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await api.post('/auth/register', { username, password });
+      const loginResponse = await api.post('/auth/login', { username, password });
+      localStorage.setItem('client_token', loginResponse.data.access_token);
+      localStorage.setItem('client_user', JSON.stringify(loginResponse.data.user));
+      setLoading(false);
+      showSuccess(`Вітаємо, ${username}! Реєстрація успішна`);
+      // Тільки при успішній реєстрації викликаємо onSuccess
+      onSuccess();
+    } catch (err: any) {
+      setLoading(false);
+      const errorMessage = err.response?.data?.detail || err.response?.data?.message || 'Помилка реєстрації';
+      setError(errorMessage);
+      // НЕ викликаємо onSuccess при помилці - залишаємо dropdown відкритим
+      // НЕ перезавантажуємо сторінку
+    }
+  };
+
+  return (
+    <div className="absolute right-0 top-full mt-2 w-96 bg-white border border-neutral-200 shadow-2xl rounded-sm overflow-hidden z-50 animate-scale-in">
+        <div className="p-6">
+        {/* Header */}
+        <div className="mb-5">
+            <h2 className="text-lg font-black text-black mb-1 uppercase tracking-[0.1em]">
+              {mode === 'login' ? 'Вхід' : 'Реєстрація'}
+            </h2>
+          </div>
+
+          {/* Error message */}
+          {error && (
+          <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 flex items-start gap-2 rounded-sm">
+            <X className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-red-800 leading-relaxed font-medium">{error}</p>
+            </div>
+          )}
+
+          {/* Form */}
+        <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-4" noValidate>
+            {/* Username */}
+            <div>
+            <label htmlFor="dropdown-auth-username" className="block text-xs font-bold text-black mb-2 uppercase tracking-[0.15em]">
+                Логін
+              </label>
+              <input
+              id="dropdown-auth-username"
+                type="text"
+                required
+                minLength={mode === 'register' ? 3 : undefined}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-4 py-3 text-sm border-b-2 border-neutral-200 focus:border-black focus:outline-none transition-all duration-200 bg-transparent font-medium"
+                placeholder={mode === 'register' ? 'Мінімум 3 символи' : 'Введіть логін'}
+              autoComplete="username"
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+            <label htmlFor="dropdown-auth-password" className="block text-xs font-bold text-black mb-2 uppercase tracking-[0.15em]">
+                Пароль
+              </label>
+              <div className="relative">
+                <input
+                id="dropdown-auth-password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  minLength={mode === 'register' ? 6 : undefined}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 pr-10 text-sm border-b-2 border-neutral-200 focus:border-black focus:outline-none transition-all duration-200 bg-transparent font-medium"
+                  placeholder={mode === 'register' ? 'Мінімум 6 символів' : 'Введіть пароль'}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black transition-colors duration-200 p-1"
+                aria-label={showPassword ? 'Приховати пароль' : 'Показати пароль'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password (only for register) */}
+            {mode === 'register' && (
+              <div>
+              <label htmlFor="dropdown-auth-confirm-password" className="block text-xs font-bold text-black mb-2 uppercase tracking-[0.15em]">
+                  Підтвердіть пароль
+                </label>
+                <div className="relative">
+                  <input
+                  id="dropdown-auth-confirm-password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-10 text-sm border-b-2 border-neutral-200 focus:border-black focus:outline-none transition-all duration-200 bg-transparent font-medium"
+                    placeholder="Повторіть пароль"
+                  autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black transition-colors duration-200 p-1"
+                  aria-label={showConfirmPassword ? 'Приховати пароль' : 'Показати пароль'}
                   >
-                    <ShoppingCart className="w-5 h-5" />
-                    Додати в кошик
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                {confirmPassword && password !== confirmPassword && (
+                <p className="mt-2 text-xs text-red-600 font-medium">Паролі не співпадають</p>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+            )}
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              disabled={loading}
+            className="w-full bg-black text-white py-3.5 px-4 text-sm font-bold uppercase tracking-[0.15em] hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 mt-6"
+            >
+              {loading ? (mode === 'login' ? 'Вхід...' : 'Реєстрація...') : (mode === 'login' ? 'Увійти' : 'Зареєструватись')}
+            </button>
+          </form>
+
+          {/* Switch mode */}
+          <div className="mt-5 pt-5 border-t border-neutral-200 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                onSwitchMode(mode === 'login' ? 'register' : 'login');
+                setError('');
+              }}
+            className="text-xs text-neutral-500 hover:text-black transition-colors duration-200 uppercase tracking-[0.1em]"
+            >
+              {mode === 'login' ? (
+                <>Ще не маєте акаунту? <span className="font-bold text-black">Зареєструватись</span></>
+              ) : (
+                <>Вже маєте акаунт? <span className="font-bold text-black">Увійти</span></>
+              )}
+            </button>
+        </div>
       </div>
     </div>
   );
@@ -546,10 +723,10 @@ function FloatingCart() {
   return (
     <Link
       to="/cart"
-      className="lg:hidden fixed bottom-6 right-6 z-40 bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded-full shadow-2xl hover:shadow-red-500/50 transition-all flex items-center gap-3 font-semibold animate-bounce-subtle"
+      className="lg:hidden fixed bottom-6 right-6 z-40 bg-black hover:bg-neutral-800 text-white px-6 py-4 rounded-md shadow-2xl transition-all flex items-center gap-3 font-semibold animate-bounce-subtle"
     >
-      <ShoppingCart className="w-6 h-6" />
-      <span className="text-lg">{cartCount}</span>
+      <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
+      <span className="text-base md:text-lg">{cartCount}</span>
     </Link>
   );
 }

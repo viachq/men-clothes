@@ -67,6 +67,8 @@ def create_access_token(subject: str) -> str:
 
 def decode_token(token: str) -> Optional[dict]:
     """Decode and validate a JWT token."""
+    if token is None:
+        return None
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
         return payload

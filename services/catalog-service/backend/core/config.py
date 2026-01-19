@@ -24,8 +24,8 @@ JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "ippt-project-dev-secret-key-fixed-
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRES_MINUTES = 10080  # 7 days
 
-# Single Restaurant Mode
-DEFAULT_RESTAURANT_ID = 1
+# Single Store Mode
+DEFAULT_STORE_ID = 1
 
 # Service Configuration
 SERVICE_NAME = "catalog-service"

@@ -7,19 +7,15 @@ import enum
 class UserRole(enum.Enum):
     """User role types."""
     CLIENT = "client"
-    RESTAURANT_ADMIN = "restaurant_admin"
+    MANAGER = "manager"
     SYSTEM_ADMIN = "system_admin"
 
 
 class OrderStatus(enum.Enum):
     """Order status lifecycle."""
     PENDING = "pending"
-    ACCEPTED = "accepted"
-    PREPARING = "preparing"
-    READY = "ready"
     DELIVERING = "delivering"
     DELIVERED = "delivered"
-    CANCELLED = "cancelled"
 
 
 class PaymentStatus(enum.Enum):

@@ -51,7 +51,7 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}/services/auth-service
       run: |
-        pytest tests/ -v \
+        pytest backend/tests/ -v \
           --cov=backend \
           --cov-report=term-missing \
           --cov-report=xml \

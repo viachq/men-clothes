@@ -15,81 +15,43 @@ class CatalogServiceClient(BaseServiceClient):
     def __init__(self):
         super().__init__(CATALOG_SERVICE_URL)
     
-    def get_menu_item(self, menu_item_id: int) -> dict:
+    def get_product(self, product_id: int) -> dict:
         """
-        Get menu item information by ID.
+        Get product information by ID.
         
         Args:
-            menu_item_id: Menu item ID
+            product_id: Product ID
         
         Returns:
-            Menu item data dictionary
+            Product data dictionary
         
         Raises:
-            HTTPException: If menu item not found or service unavailable
+            HTTPException: If product not found or service unavailable
         """
         try:
-            response = self.get(f"/menu/{menu_item_id}")
+            response = self.get(f"/products/{product_id}")
             return response.json()
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
-                raise HTTPException(status_code=404, detail="Menu item not found")
+                raise HTTPException(status_code=404, detail="Product not found")
             raise
     
-    def get_restaurant(self, restaurant_id: int) -> dict:
+    def validate_product_id(self, product_id: int) -> bool:
         """
-        Get restaurant information by ID.
+        Validate that product exists.
         
         Args:
-            restaurant_id: Restaurant ID
+            product_id: Product ID to validate
         
         Returns:
-            Restaurant data dictionary
-        
-        Raises:
-            HTTPException: If restaurant not found or service unavailable
+            True if product exists, False otherwise
         """
         try:
-            response = self.get(f"/restaurant/{restaurant_id}")
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404:
-                raise HTTPException(status_code=404, detail="Restaurant not found")
-            raise
-    
-    def validate_menu_item_id(self, menu_item_id: int) -> bool:
-        """
-        Validate that menu item exists.
-        
-        Args:
-            menu_item_id: Menu item ID to validate
-        
-        Returns:
-            True if menu item exists, False otherwise
-        """
-        try:
-            self.get_menu_item(menu_item_id)
+            self.get_product(product_id)
             return True
         except HTTPException:
             return False
     
-    def validate_restaurant_id(self, restaurant_id: int) -> bool:
-        """
-        Validate that restaurant exists.
-        
-        Args:
-            restaurant_id: Restaurant ID to validate
-        
-        Returns:
-            True if restaurant exists, False otherwise
-        """
-        try:
-            self.get_restaurant(restaurant_id)
-            return True
-        except HTTPException:
-            return False
-
-
 # Singleton instance
 _catalog_client: Optional[CatalogServiceClient] = None
 

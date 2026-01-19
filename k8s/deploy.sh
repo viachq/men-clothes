@@ -3,7 +3,7 @@
 
 set -e
 
-echo "🚀 Deploying Food Delivery Microservices to Kubernetes..."
+echo "🚀 Deploying Men's Clothes Store Microservices to Kubernetes..."
 
 # Перевірка чи kubectl доступний
 if ! command -v kubectl &> /dev/null; then

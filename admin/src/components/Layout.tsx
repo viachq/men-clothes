@@ -1,180 +1,151 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   ShoppingBag,
   UtensilsCrossed,
-  Store,
-  Star,
   Users,
   LogOut,
   Menu,
   X,
-  FolderOpen,
-  ChevronDown
 } from 'lucide-react';
-import Breadcrumbs from './Breadcrumbs';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
-interface NavSection {
-  title: string;
-  items: Array<{
-    name: string;
-    href: string;
-    icon: any;
-  }>;
-}
-
-const navigationSections: NavSection[] = [
-  {
-    title: 'Головне',
-    items: [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    ],
-  },
-  {
-    title: 'Контент',
-    items: [
-      { name: 'Menu', href: '/menu', icon: UtensilsCrossed },
-      { name: 'Categories', href: '/categories', icon: FolderOpen },
-    ],
-  },
-  {
-    title: 'Операції',
-    items: [
-      { name: 'Orders', href: '/orders', icon: ShoppingBag },
-      { name: 'Reviews', href: '/reviews', icon: Star },
-    ],
-  },
-  {
-    title: 'Налаштування',
-    items: [
-      { name: 'Restaurant', href: '/restaurant', icon: Store },
-      { name: 'Users', href: '/users', icon: Users },
-    ],
-  },
+const navigationItems = [
+  { name: 'Огляд', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Товари', href: '/menu', icon: UtensilsCrossed },
 ];
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(navigationSections.map((s) => s.title))
-  );
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  const toggleSection = (title: string) => {
-    setExpandedSections((prev) => {
-      const next = new Set(prev);
-      if (next.has(title)) {
-        next.delete(title);
-      } else {
-        next.add(title);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-menu-container')) {
+        setUserMenuOpen(false);
       }
-      return next;
-    });
-  };
+    };
+
+    if (userMenuOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [userMenuOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user_role');
     navigate('/login');
+    setUserMenuOpen(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-gray-900/80" onClick={() => setSidebarOpen(false)} />
-          <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-white">
-            <div className="flex h-16 items-center justify-between px-6 border-b">
-              <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
-              <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-gray-700">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <nav className="p-4 space-y-6">
-              {navigationSections.map((section) => (
-                <div key={section.title}>
+    <div className="min-h-screen bg-neutral-100">
+      {/* Header - Same style as client site */}
+      <header className="bg-white/95 backdrop-blur-sm sticky top-0 z-50 border-b border-neutral-200/50 transition-all duration-300">
+        <div className="max-w-[1920px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20">
+          <div className="flex items-center justify-between h-14 md:h-16">
+            {/* Left - Mobile Menu Button */}
                   <button
-                    onClick={() => toggleSection(section.title)}
-                    className="flex items-center justify-between w-full px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700"
-                  >
-                    {section.title}
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform ${
-                        expandedSections.has(section.title) ? '' : '-rotate-90'
-                      }`}
-                    />
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 text-neutral-900 hover:text-black transition-colors duration-200"
+              aria-label="Меню"
+            >
+              <Menu className="w-5 h-5 md:w-6 md:h-6" />
                   </button>
-                  {expandedSections.has(section.title) && (
-                    <div className="mt-2 space-y-1">
-                      {section.items.map((item) => {
+
+            {/* Center - Logo */}
+            <Link 
+              to="/dashboard" 
+              className="absolute left-1/2 -translate-x-1/2 text-lg md:text-xl font-black text-black tracking-[0.08em] hover:opacity-70 transition-opacity duration-200 uppercase"
+            >
+              Men's Clothes Admin
+            </Link>
+
+            {/* Right - Navigation */}
+            <nav className="flex items-center gap-3 md:gap-4 ml-auto">
+              {/* Desktop Navigation */}
+              <div className="hidden lg:flex items-center gap-2">
+                {navigationItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.href;
                         return (
                           <Link
                             key={item.name}
                             to={item.href}
-                            onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
+                      className={`px-3 py-2 text-sm font-medium transition-colors duration-200 ${
                               isActive
-                                ? 'bg-red-50 text-red-600 font-semibold shadow-sm'
-                                : 'text-gray-700 hover:bg-gray-50'
+                          ? 'text-black border-b-2 border-black'
+                          : 'text-neutral-600 hover:text-black'
                             }`}
                           >
-                            <Icon className="w-5 h-5" />
-                            <span className="font-medium">{item.name}</span>
+                      {item.name}
                           </Link>
                         );
                       })}
+              </div>
+
+              {/* User Menu */}
+              <div className="relative user-menu-container">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="p-2 text-neutral-600 hover:text-black transition-colors duration-200"
+                  aria-label="Меню користувача"
+                >
+                  <Users className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-neutral-200 shadow-xl rounded-sm overflow-hidden z-50 animate-scale-in">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:text-black transition-colors duration-200"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Вихід</span>
+                    </button>
                     </div>
                   )}
                 </div>
-              ))}
             </nav>
           </div>
         </div>
-      )}
+      </header>
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white border-r">
-          <div className="flex h-16 items-center px-6 border-b bg-gradient-to-r from-red-600 to-orange-500">
-            <h1 className="text-xl font-extrabold text-white">🍕 Admin Panel</h1>
-          </div>
-          <nav className="flex-1 p-4 space-y-6">
-            {navigationSections.map((section) => (
-              <div key={section.title}>
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-md" onClick={() => setMobileMenuOpen(false)} />
+          <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-white shadow-2xl">
+            <div className="flex h-14 items-center justify-between px-6 border-b border-neutral-200">
+              <h1 className="text-base font-black text-black tracking-tight uppercase">Men's Clothes Admin</h1>
                 <button
-                  onClick={() => toggleSection(section.title)}
-                  className="flex items-center justify-between w-full px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700"
-                >
-                  {section.title}
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${
-                      expandedSections.has(section.title) ? '' : '-rotate-90'
-                    }`}
-                  />
+                onClick={() => setMobileMenuOpen(false)} 
+                className="text-neutral-400 hover:text-black transition-colors"
+              >
+                <X className="w-6 h-6" />
                 </button>
-                {expandedSections.has(section.title) && (
-                  <div className="mt-2 space-y-1">
-                    {section.items.map((item) => {
+            </div>
+            <nav className="p-4 space-y-1">
+              {navigationItems.map((item) => {
                       const Icon = item.icon;
                       const isActive = location.pathname === item.href;
                       return (
                         <Link
                           key={item.name}
                           to={item.href}
-                          className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                             isActive
-                              ? 'bg-red-50 text-red-600 font-semibold shadow-sm'
-                              : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-neutral-900 text-white font-semibold shadow-md'
+                        : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'
                           }`}
                         >
                           <Icon className="w-5 h-5" />
@@ -182,42 +153,30 @@ export default function Layout({ children }: LayoutProps) {
                         </Link>
                       );
                     })}
-                  </div>
-                )}
-              </div>
-            ))}
           </nav>
-          <div className="p-4 border-t">
+            <div className="p-4 border-t border-neutral-200">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-black transition-colors"
             >
               <LogOut className="w-5 h-5" />
-              <span className="font-medium">Logout</span>
+                <span className="font-medium">Вийти</span>
             </button>
           </div>
         </div>
       </div>
+      )}
 
       {/* Main content */}
-      <div className="lg:pl-64">
-        <div className="sticky top-0 z-10 flex h-16 bg-white border-b lg:hidden">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="px-4 text-gray-500 hover:text-gray-700"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-          <div className="flex flex-1 items-center px-4">
-            <h1 className="text-lg font-semibold text-gray-900">Admin Panel</h1>
+      <main className="p-6 lg:p-10 bg-neutral-100 min-h-screen flex flex-col">
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex items-start justify-center">
+            <div className="w-full max-w-[1600px]">
+              {children}
+            </div>
           </div>
         </div>
-        <main className="p-4 lg:p-8">
-          <Breadcrumbs />
-          {children}
         </main>
-      </div>
     </div>
   );
 }
-

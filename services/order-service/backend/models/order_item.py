@@ -12,9 +12,8 @@ class OrderItem(Base):
     __tablename__ = "order_items"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)  # Internal FK to orders
-    # External ID (no ForeignKey - references catalog-service menu_items)
-    menu_item_id = Column(Integer, nullable=False, index=True)  # References catalog-service menu_items
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
+    menu_item_id = Column(Integer, nullable=False, index=True)
     quantity = Column(Integer, default=1, nullable=False)
     price = Column(Integer, nullable=False)  # Price at time of order (in cents/kopiyky)
 

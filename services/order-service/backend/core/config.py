@@ -24,8 +24,8 @@ JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "ippt-project-dev-secret-key-fixed-
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRES_MINUTES = 10080  # 7 days
 
-# Single Restaurant Mode
-DEFAULT_RESTAURANT_ID = 1
+# Single Store Mode
+DEFAULT_STORE_ID = 1
 
 # Service Configuration
 SERVICE_NAME = "order-service"
@@ -35,7 +35,7 @@ SERVICE_PORT = 8003
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
 CATALOG_SERVICE_URL = os.getenv("CATALOG_SERVICE_URL", "http://localhost:8002")
 
-# Telegram Bot Settings
-TELEGRAM_BOT_TOKEN = "8322734845:AAGQDbGSboYa9qP5G6H-omfAnnPL0GDiwQE"
-TELEGRAM_ADMIN_CHAT_IDS = [827612750]
-TELEGRAM_NOTIFICATIONS_ENABLED = True
+# LiqPay Settings
+LIQPAY_PUBLIC_KEY = os.getenv("LIQPAY_PUBLIC_KEY", "sandbox_i92249544327")
+LIQPAY_PRIVATE_KEY = os.getenv("LIQPAY_PRIVATE_KEY", "sandbox_nPi9dv3hV5WstAz8NKCtJgaUWweoX0NGBGmCVVBE")
+LIQPAY_SANDBOX_MODE = os.getenv("LIQPAY_SANDBOX_MODE", "true").lower() == "true"

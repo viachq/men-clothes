@@ -50,9 +50,9 @@ def change_user_role(
 @router.get("/")
 def get_all_users(
     db: Session = Depends(get_db),
-    _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN))
+    _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.MANAGER))
 ):
-    """Get all users (admin only)."""
+    """Get all users (system admin and manager can view)."""
     users = db.query(User).all()
     return [
         {
