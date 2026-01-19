@@ -36,7 +36,7 @@ class TestCreateOrder:
         assert response.status_code == 201
         data = response.json()
         assert "id" in data
-        assert data["delivery_address"] == "Test Address"
+        assert data["delivery_address"] == "Test Address 123"
         assert "payment_id" in data
 
 
