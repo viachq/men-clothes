@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
       - name: catalog-service
-        image: catalog-service:latest
-        imagePullPolicy: IfNotPresent
+        image: ghcr.io/viachq/ippt-microservices-catalog-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8002
           name: http

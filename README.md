@@ -273,19 +273,73 @@ kubectl get svc -n food-delivery
 
 #### 1. Повний CI/CD Pipeline (`.github/workflows/ci-cd.yml`)
 
-**Етапи pipeline:**
-1. **Build Docker Images** - збірка образів для всіх сервісів
-2. **Push to Registry** - завантаження до GitHub Container Registry (ghcr.io)
-3. **Deploy to Kubernetes** - автоматичний деплой (опціонально)
+**Етапи pipeline (послідовно):**
+
+```
+┌─────────┐
+│  Lint   │ → Перевірка якості коду (flake8 для Python, eslint для Frontend)
+└─────────┘
+    │
+    ↓
+┌─────────┐
+│  Tests  │ → Unit tests для Python сервісів (pytest, coverage >= 70%)
+└─────────┘
+    │
+    ↓
+┌──────────────┐
+│ Build Images │ → Збірка Docker образів для всіх сервісів
+└──────────────┘
+    │
+    ↓
+┌─────────────┐
+│ Push Images │ → Завантаження до ghcr.io/viachq/ippt-microservices-*
+└─────────────┘
+    │
+    ↓
+┌─────────────────┐
+│ Deploy to K8s   │ → Автоматичний деплой (якщо налаштовано KUBECONFIG)
+└─────────────────┘
+```
+
+**Деталі:**
+
+1. **Lint** ✅
+   - Python сервіси: `flake8` для auth-service, catalog-service, order-service
+   - Frontend сервіси: `eslint` для client-frontend, admin-frontend
+   - Перевірка синтаксису та стилю коду
+
+2. **Tests** ✅
+   - Unit tests для всіх Python сервісів (pytest)
+   - Покриття коду >= 70% (обов'язково)
+   - Тестування на Python 3.11, 3.12, 3.13
+   - Coverage reports завантажуються до Codecov
+
+3. **Build Docker Images** ✅
+   - Збірка образів для всіх сервісів
+   - Використання Docker Buildx з кешуванням
+   - Multi-stage builds для оптимізації розміру
+
+4. **Push to Registry** ✅
+   - Завантаження до GitHub Container Registry (ghcr.io)
+   - Теги: `latest`, `{branch}`, `{sha}`, семантичні версії
+   - **Registry:** `ghcr.io/viachq/ippt-microservices-{service-name}`
+
+5. **Deploy to Kubernetes** ✅ (опціонально)
+   - Автоматичний деплой в кластер (тільки main branch)
+   - Оновлення image tags в deployment файлах
+   - Застосування всіх Kubernetes ресурсів
+   - Очікування готовності deployments
 
 **Сервіси:**
-- auth-service
-- catalog-service
-- order-service
-- client-frontend
-- admin-frontend
+- **Backend:** auth-service, catalog-service, order-service
+- **Frontend:** client-frontend, admin-frontend
 
-**Registry:** `ghcr.io/viachq/ippt-microservices-{service-name}`
+**Налаштування автоматичного деплою:**
+Щоб увімкнути автоматичний деплой, додайте secret `KUBECONFIG` в GitHub Settings → Secrets → Actions.
+Детальна інструкція: [docs/KUBERNETES_SETUP.md](docs/KUBERNETES_SETUP.md)
+
+**Без налаштування KUBECONFIG:**
+Pipeline автоматично пропустить крок деплою, але всі інші етапи (Lint → Tests → Build → Push) виконаються.
 
 #### 2. Auth Service Tests (`.github/workflows/auth-service-tests.yml`)
 

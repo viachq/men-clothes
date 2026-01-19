@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
       - name: auth-service
-        image: auth-service:latest
-        imagePullPolicy: IfNotPresent
+        image: ghcr.io/viachq/ippt-microservices-auth-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8001
           name: http

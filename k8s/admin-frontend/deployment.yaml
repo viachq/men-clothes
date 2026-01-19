@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
       - name: admin-frontend
-        image: admin-frontend:latest
-        imagePullPolicy: IfNotPresent
+        image: ghcr.io/viachq/ippt-microservices-admin-frontend:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 5173
           name: http
