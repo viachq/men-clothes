@@ -29,7 +29,7 @@
 
 ```bash
 # 1. Клонувати репозиторій
-git clone https://github.com/viachq/ippt-microservices.git
+git clone https://github.com/YOUR_GITHUB_USERNAME/ippt-microservices.git
 cd ippt-microservices
 
 # 2. Запустити всі сервіси одним команд
@@ -58,7 +58,7 @@ docker-compose up --build
 
 ```bash
 # Створити форк або клонувати
-git clone https://github.com/viachq/ippt-microservices.git
+git clone https://github.com/YOUR_GITHUB_USERNAME/ippt-microservices.git
 cd ippt-microservices
 ```
 
@@ -85,14 +85,14 @@ git remote -v
 3. **Змінити назву в проекті (опціонально):**
 ```bash
 # Замінити всі згадки старого назви на ваше
-# Наприклад, якщо змінюєте "viachq" на "yourusername":
+# Наприклад, якщо змінюєте "YOUR_GITHUB_USERNAME" на "yourusername":
 # Windows PowerShell
-(Get-Content .github/workflows/ci-cd.yml) -replace 'viachq', 'yourusername' | Set-Content .github/workflows/ci-cd.yml
-(Get-Content k8s/*/deployment.yaml) -replace 'viachq', 'yourusername' | Set-Content k8s/*/deployment.yaml
+(Get-Content .github/workflows/ci-cd.yml) -replace 'YOUR_GITHUB_USERNAME', 'yourusername' | Set-Content .github/workflows/ci-cd.yml
+(Get-Content k8s/*/deployment.yaml) -replace 'YOUR_GITHUB_USERNAME', 'yourusername' | Set-Content k8s/*/deployment.yaml
 
 # Linux/Mac
-sed -i 's/viachq/yourusername/g' .github/workflows/ci-cd.yml
-sed -i 's/viachq/yourusername/g' k8s/*/deployment.yaml
+sed -i 's/YOUR_GITHUB_USERNAME/yourusername/g' .github/workflows/ci-cd.yml
+sed -i 's/YOUR_GITHUB_USERNAME/yourusername/g' k8s/*/deployment.yaml
 ```
 
 4. **Закомітити та запушити:**
@@ -365,7 +365,7 @@ ippt-microservices/
 
 ```bash
 # 1. Клонувати репозиторій (якщо ще не зробили)
-git clone https://github.com/viachq/ippt-microservices.git
+git clone https://github.com/YOUR_GITHUB_USERNAME/ippt-microservices.git
 cd ippt-microservices
 
 # 2. Запустити всі сервіси
@@ -854,7 +854,7 @@ kubectl apply -f k8s/
 
 2. **Оновити image paths в Kubernetes manifests:**
    - Відредагувати `k8s/*/deployment.yaml` файли
-   - Замінити `ghcr.io/viachq/...` на `ghcr.io/ВАШ_GITHUB_USERNAME/...`
+   - Замінити `ghcr.io/YOUR_GITHUB_USERNAME/...` на `ghcr.io/ВАШ_GITHUB_USERNAME/...`
 
 **Без налаштування KUBECONFIG:**
 Pipeline автоматично пропустить крок деплою, але всі інші етапи (Lint → Tests → Build → Push) виконаються.
@@ -1002,7 +1002,7 @@ kubectl logs <pod-name> -n ippt-microservices
 
 ## 🔗 Корисні посилання
 
-- **GitHub Repository**: https://github.com/viachq/ippt-microservices
+- **GitHub Repository**: https://github.com/YOUR_GITHUB_USERNAME/ippt-microservices
 - **Docker документація**: [DOCKER.md](DOCKER.md)
 - **Kubernetes setup**: [docs/KUBERNETES_SETUP.md](docs/KUBERNETES_SETUP.md)
 - **FastAPI документація**: https://fastapi.tiangolo.com/

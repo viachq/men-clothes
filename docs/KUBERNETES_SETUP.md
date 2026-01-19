@@ -199,7 +199,7 @@ Pipeline все одно буде збирати та пушити образи,
 ```bash
 # Оновити image tags
 export IMAGE_TAG="latest"
-export IMAGE_PREFIX="ghcr.io/viachq/ippt-microservices"
+export IMAGE_PREFIX="ghcr.io/YOUR_GITHUB_USERNAME/ippt-microservices"
 
 sed -i "s|image:.*auth-service.*|image: ${IMAGE_PREFIX}-auth-service:${IMAGE_TAG}|g" k8s/auth-service/deployment.yaml
 # ... (для інших сервісів)

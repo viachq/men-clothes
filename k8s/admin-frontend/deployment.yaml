@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: admin-frontend
-        image: ghcr.io/viachq/ippt-microservices-admin-frontend:latest
+        image: ghcr.io/YOUR_GITHUB_USERNAME/ippt-microservices-admin-frontend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5173
