@@ -13,11 +13,8 @@ services:
       - SERVICE_NAME=auth-service
       - SERVICE_PORT=8001
     volumes:
-      # Монтуємо директорію з БД з хоста (файли створюються автоматично якщо не існують)
-      - ./:/app/host-db:ro
+      # Монтуємо тільки основний файл БД (shm і wal файли створюються автоматично SQLite)
       - ./auth.db:/app/data/auth.db
-      - ./auth.db-shm:/app/data/auth.db-shm
-      - ./auth.db-wal:/app/data/auth.db-wal
     networks:
       - ippt-microservices-network
     restart: unless-stopped
@@ -44,11 +41,8 @@ services:
       - AUTH_SERVICE_URL=http://auth-service:8001
       - ORDER_SERVICE_URL=http://order-service:8003
     volumes:
-      # Монтуємо директорію з БД з хоста (файли створюються автоматично якщо не існують)
-      - ./:/app/host-db:ro
+      # Монтуємо тільки основний файл БД (shm і wal файли створюються автоматично SQLite)
       - ./catalog.db:/app/data/catalog.db
-      - ./catalog.db-shm:/app/data/catalog.db-shm
-      - ./catalog.db-wal:/app/data/catalog.db-wal
     networks:
       - ippt-microservices-network
     depends_on:
@@ -78,11 +72,8 @@ services:
       - AUTH_SERVICE_URL=http://auth-service:8001
       - CATALOG_SERVICE_URL=http://catalog-service:8002
     volumes:
-      # Монтуємо директорію з БД з хоста (файли створюються автоматично якщо не існують)
-      - ./:/app/host-db:ro
+      # Монтуємо тільки основний файл БД (shm і wal файли створюються автоматично SQLite)
       - ./order.db:/app/data/order.db
-      - ./order.db-shm:/app/data/order.db-shm
-      - ./order.db-wal:/app/data/order.db-wal
     networks:
       - ippt-microservices-network
     depends_on:
