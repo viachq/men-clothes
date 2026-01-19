@@ -1,22 +1,22 @@
-# IPPT Microservices - Мікросервісний вебзастосунок з CI/CD та Kubernetes
+﻿# IPPT Microservices - Мікросервісний вебзастосунок з CI/CD та Kubernetes
 
 Проект для практики: мікросервісний вебзастосунок для системи замовлення одягу з автоматизованим CI/CD pipeline та деплоєм у Kubernetes.
 
-## 📋 Зміст
+## Зміст
 
-- [Швидкий старт](#швидкий-старт) ⚡
-- [Налаштування для нових користувачів](#налаштування-для-нових-користувачів) 🔧
-- [Архітектура](#архітектура) 🏗️
-- [Технології](#технології) 🛠️
-- [Структура проекту](#структура-проекту) 📁
-- [Локальний запуск](#локальний-запуск) 🚀
-- [Docker](#docker) 🐳
-- [Kubernetes Deployment](#kubernetes-deployment) ☸️
-- [CI/CD](#cicd) 🔄
-- [Тестування](#тестування) 🧪
-- [API Документація](#api-документація) 📚
+- [Швидкий старт](#швидкий-старт)
+- [Налаштування для нових користувачів](#налаштування-для-нових-користувачів)
+- [Архітектура](#архітектура)
+- [Технології](#технології)
+- [Структура проекту](#структура-проекту)
+- [Локальний запуск](#локальний-запуск)
+- [Docker](#docker)
+- [Kubernetes Deployment](#kubernetes-deployment)
+- [CI/CD](#cicd)
+- [Тестування](#тестування)
+- [API Документація](#api-документація)
 
-## ⚡ Швидкий старт
+## Швидкий старт
 
 ### Мінімальні вимоги
 
@@ -48,7 +48,7 @@ docker-compose up --build
 - `manager` / `manager` - Manager  
 - `client` / `client` - Client
 
-## 🔧 Налаштування для нових користувачів
+## Налаштування для нових користувачів
 
 ### Як склонувати та налаштувати проект для себе
 
@@ -204,7 +204,7 @@ image: ghcr.io/ВАШ_GITHUB_USERNAME/ippt-microservices-catalog-service:${{ git
 
 **Важливо:** Без `KUBECONFIG` secret, pipeline все одно працюватиме, але пропустить крок деплою.
 
-## 🏗️ Архітектура
+## Архітектура
 
 Проект реалізований як мікросервісна архітектура з трьома основними backend сервісами та двома frontend додатками:
 
@@ -287,7 +287,7 @@ image: ghcr.io/ВАШ_GITHUB_USERNAME/ippt-microservices-catalog-service:${{ git
 - `catalog.db` - категорії та товари
 - `order.db` - замовлення, кошики, платежі
 
-## 🛠️ Технології
+## Технології
 
 ### Backend
 - **Python 3.13** - мова програмування
@@ -312,7 +312,7 @@ image: ghcr.io/ВАШ_GITHUB_USERNAME/ippt-microservices-catalog-service:${{ git
 - **GitHub Actions** - CI/CD pipeline
 - **GitHub Container Registry** - зберігання Docker образів
 
-## 📁 Структура проекту
+## Структура проекту
 
 ```
 ippt-microservices/
@@ -357,7 +357,7 @@ ippt-microservices/
 └── README.md                   # Цей файл
 ```
 
-## 🚀 Локальний запуск
+## Локальний запуск
 
 ### Варіант 1: Docker Compose (рекомендовано)
 
@@ -537,7 +537,7 @@ npm run dev
 
 **Важливо:** Для production змініть паролі за замовчуванням!
 
-## 🐳 Docker
+## Docker
 
 ### Запуск з Docker Compose
 
@@ -594,7 +594,7 @@ docker build -t client-frontend:latest ./client
 
 Детальна інструкція: [DOCKER.md](DOCKER.md)
 
-## ☸️ Kubernetes Deployment
+## Kubernetes Deployment
 
 ### Вимоги
 
@@ -772,7 +772,7 @@ kubectl apply -f k8s/
 
 Детальна інструкція: [docs/KUBERNETES_SETUP.md](docs/KUBERNETES_SETUP.md)
 
-## 🔄 CI/CD
+## CI/CD
 
 ### GitHub Actions Pipeline
 
@@ -859,7 +859,7 @@ kubectl apply -f k8s/
 **Без налаштування KUBECONFIG:**
 Pipeline автоматично пропустить крок деплою, але всі інші етапи (Lint → Tests → Build → Push) виконаються.
 
-## 🧪 Тестування
+## Тестування
 
 ### Unit Tests
 
@@ -916,7 +916,7 @@ start htmlcov/index.html  # Windows
 xdg-open htmlcov/index.html  # Linux
 ```
 
-## 📚 API Документація
+## API Документація
 
 Кожен сервіс має автоматичну OpenAPI/Swagger документацію:
 
@@ -929,7 +929,7 @@ xdg-open htmlcov/index.html  # Linux
 - Параметри запитів та відповідей
 - Можливість тестування API прямо в браузері
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Проблеми з Docker
 
@@ -992,15 +992,7 @@ kubectl get pods -n ippt-microservices
 kubectl logs <pod-name> -n ippt-microservices
 ```
 
-## 📝 Ліцензія
-
-Цей проект створено для навчальних цілей в рамках практики з мікросервісних архітектур та DevOps.
-
-## 👥 Автори
-
-Проект виконано в рамках практики з мікросервісних архітектур та DevOps.
-
-## 🔗 Корисні посилання
+## Корисні посилання
 
 - **GitHub Repository**: https://github.com/YOUR_GITHUB_USERNAME/ippt-microservices
 - **Docker документація**: [DOCKER.md](DOCKER.md)
@@ -1009,6 +1001,3 @@ kubectl logs <pod-name> -n ippt-microservices
 - **React документація**: https://react.dev/
 - **Kubernetes документація**: https://kubernetes.io/docs/
 
----
-
-**Приємної розробки! 🚀**
