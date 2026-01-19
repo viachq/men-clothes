@@ -23,15 +23,18 @@ class TestListProducts:
         assert data[0]["name"] == test_menu_item.name
         assert data[0]["price"] == test_menu_item.price
     
-    def test_list_products_filter_by_category(self, client, test_category, test_db):
+    def test_list_products_filter_by_category(self, client, test_category, test_menu_item, test_db):
         """Test filtering products by category."""
+        from backend.models.category import Category
+        from backend.models.menu_item import MenuItem
+        
         # Create another category and product
-        category2 = test_category.__class__(name="Category 2")
+        category2 = Category(name="Category 2")
         test_db.add(category2)
         test_db.commit()
         test_db.refresh(category2)
         
-        item2 = test_menu_item.__class__(
+        item2 = MenuItem(
             name="Product 2",
             price=2000,
             category_id=category2.id
@@ -48,8 +51,10 @@ class TestListProducts:
     
     def test_list_products_search(self, client, test_menu_item, test_db):
         """Test searching products by name."""
+        from backend.models.menu_item import MenuItem
+        
         # Create another product
-        item2 = test_menu_item.__class__(
+        item2 = MenuItem(
             name="Another Product",
             price=2000
         )
