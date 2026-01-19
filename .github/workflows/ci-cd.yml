@@ -137,7 +137,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: coverage-${{ matrix.service.name }}-py${{ matrix.python-version }}
-        path: ./${{ matrix.service.path }}/htmlcov
+        path: ${{ matrix.service.path }}/htmlcov
       continue-on-error: true
 
   # 3. Build Docker Images - Build images for all services

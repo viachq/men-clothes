@@ -14,7 +14,7 @@ from backend.main import app
 from backend.models.category import Category
 from backend.models.menu_item import MenuItem
 from backend.models.user import User
-from backend.core.security import decode_token, create_access_token
+from backend.core.security import decode_token
 from backend.core.enums import UserRole
 
 
