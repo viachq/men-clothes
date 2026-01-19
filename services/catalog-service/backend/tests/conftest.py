@@ -45,6 +45,12 @@ def test_db():
 @pytest.fixture(scope="function")
 def client(test_db):
     """Create a test client with overridden database dependency."""
+    # Clear cache before each test
+    from backend.routers.categories import clear_categories_cache
+    from backend.routers.menu import clear_products_cache
+    clear_categories_cache()
+    clear_products_cache()
+    
     def override_get_db():
         try:
             yield test_db
@@ -54,6 +60,10 @@ def client(test_db):
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
     app.dependency_overrides.clear()
+    
+    # Clear cache after test
+    clear_categories_cache()
+    clear_products_cache()
 
 
 @pytest.fixture
@@ -160,9 +170,9 @@ def mock_auth_client():
         
         def get_user_by_username(username):
             users = {
-                "testuser": {"id": 1, "username": "testuser", "role": "CLIENT"},
-                "admin": {"id": 2, "username": "admin", "role": "SYSTEM_ADMIN"},
-                "manager": {"id": 3, "username": "manager", "role": "MANAGER"},
+                "testuser": {"id": 1, "username": "testuser", "role": UserRole.CLIENT.value},
+                "admin": {"id": 2, "username": "admin", "role": UserRole.SYSTEM_ADMIN.value},
+                "manager": {"id": 3, "username": "manager", "role": UserRole.MANAGER.value},
             }
             if username in users:
                 return users[username]

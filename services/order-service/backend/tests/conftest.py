@@ -162,9 +162,9 @@ def mock_auth_client():
         
         def get_user_by_username(username):
             users = {
-                "testuser": {"id": 1, "username": "testuser", "role": "CLIENT"},
-                "admin": {"id": 2, "username": "admin", "role": "SYSTEM_ADMIN"},
-                "manager": {"id": 3, "username": "manager", "role": "MANAGER"},
+                "testuser": {"id": 1, "username": "testuser", "role": UserRole.CLIENT.value},
+                "admin": {"id": 2, "username": "admin", "role": UserRole.SYSTEM_ADMIN.value},
+                "manager": {"id": 3, "username": "manager", "role": UserRole.MANAGER.value},
             }
             if username in users:
                 return users[username]
