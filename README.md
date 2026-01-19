@@ -341,24 +341,6 @@ kubectl get svc -n food-delivery
 **Без налаштування KUBECONFIG:**
 Pipeline автоматично пропустить крок деплою, але всі інші етапи (Lint → Tests → Build → Push) виконаються.
 
-#### 2. Auth Service Tests (`.github/workflows/auth-service-tests.yml`)
-
-**Етапи:**
-1. **Lint** - перевірка коду з flake8
-2. **Tests** - запуск unit tests з pytest
-3. **Coverage** - перевірка покриття коду (>= 70%)
-4. **Reports** - завантаження coverage reports
-
-#### 3. Catalog Service Tests (`.github/workflows/catalog-service-tests.yml`)
-
-- Lint перевірка
-- Тести (якщо додані)
-
-#### 4. Order Service Tests (`.github/workflows/order-service-tests.yml`)
-
-- Lint перевірка
-- Тести (якщо додані)
-
 ### Запуск тестів локально
 
 ```bash
@@ -370,30 +352,39 @@ pytest backend/tests/ -v --cov=backend --cov-report=term-missing --cov-fail-unde
 
 ### Unit Tests
 
-Проект містить комплексні unit tests для `auth-service`:
+Проект містить комплексні unit tests для всіх Python сервісів:
 
-- **Coverage: 95%** (вище мінімального 70%)
-- **76 тестів** - всі проходять
-- Тести для security functions, API endpoints, dependencies, models
+- **auth-service**: Coverage ~95% (76 тестів)
+- **catalog-service**: Coverage >=70% (базові тести)
+- **order-service**: Coverage >=70% (базові тести)
+
+Всі тести включають перевірку security functions, API endpoints, dependencies, models
 
 ### Структура тестів
 
+Кожен Python сервіс має свою директорію тестів:
+
 ```
-services/auth-service/backend/tests/
+services/{service}/backend/tests/
 ├── conftest.py              # Pytest fixtures
 ├── test_security.py         # Security functions tests
-├── test_auth_register.py   # Registration tests
-├── test_auth_login.py       # Login tests
-├── test_users.py            # User endpoints tests
+├── test_models.py           # Models tests
 ├── test_deps.py             # Dependencies tests
-└── test_models.py           # Models tests
+└── test_*.py                # Endpoint tests
 ```
 
 ### Запуск тестів
 
 ```bash
+# Для конкретного сервісу
 cd services/auth-service
-pytest backend/tests/ -v
+pytest backend/tests/ -v --cov=backend --cov-report=term-missing --cov-fail-under=70
+
+cd services/catalog-service
+pytest backend/tests/ -v --cov=backend --cov-report=term-missing --cov-fail-under=70
+
+cd services/order-service
+pytest backend/tests/ -v --cov=backend --cov-report=term-missing --cov-fail-under=70
 ```
 
 ## 📚 API Документація
