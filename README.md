@@ -216,7 +216,6 @@ image: ghcr.io/ВАШ_GITHUB_USERNAME/ippt-microservices-catalog-service:${{ git
 
 - Перейдіть: **Settings** → **Secrets and variables** → **Actions**
 - Додати `KUBECONFIG` secret (base64 закодований kubeconfig файл)
-- Детальна інструкція: [docs/KUBERNETES_SETUP.md](docs/KUBERNETES_SETUP.md)
 
 **Важливо:** Без `KUBECONFIG` secret, pipeline все одно працюватиме, але пропустить крок деплою.
 
@@ -367,9 +366,6 @@ ippt-microservices/
 │   └── workflows/
 │       └── ci-cd.yml           # CI/CD pipeline
 ├── docker-compose.yml          # Docker Compose конфігурація
-├── DOCKER.md                   # Docker документація
-├── docs/
-│   └── KUBERNETES_SETUP.md     # Kubernetes setup інструкції
 └── README.md                   # Цей файл
 ```
 
@@ -556,7 +552,6 @@ docker build -t admin-frontend:latest ./admin
 docker build -t client-frontend:latest ./client
 ```
 
-Детальна інструкція: [DOCKER.md](DOCKER.md)
 
 ## Kubernetes Deployment
 
@@ -732,7 +727,6 @@ kubectl apply -f k8s/
 2. Запушить в GitHub Container Registry
 3. Задеплоїть в Kubernetes кластер
 
-Детальна інструкція: [docs/KUBERNETES_SETUP.md](docs/KUBERNETES_SETUP.md)
 
 ## CI/CD
 
@@ -812,7 +806,6 @@ kubectl apply -f k8s/
    - Натисніть **New repository secret**
    - **Name**: `KUBECONFIG`
    - **Secret**: base64 закодований kubeconfig файл
-   - Детальна інструкція: [docs/KUBERNETES_SETUP.md](docs/KUBERNETES_SETUP.md)
 
 2. **Оновити image paths в Kubernetes manifests:**
    - Відредагувати `k8s/*/deployment.yaml` файли
@@ -953,8 +946,6 @@ kubectl logs <pod-name> -n ippt-microservices
 ## Корисні посилання
 
 - **GitHub Repository**: https://github.com/YOUR_GITHUB_USERNAME/ippt-microservices
-- **Docker документація**: [DOCKER.md](DOCKER.md)
-- **Kubernetes setup**: [docs/KUBERNETES_SETUP.md](docs/KUBERNETES_SETUP.md)
 - **FastAPI документація**: https://fastapi.tiangolo.com/
 - **React документація**: https://react.dev/
 - **Kubernetes документація**: https://kubernetes.io/docs/
