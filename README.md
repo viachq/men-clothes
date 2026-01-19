@@ -54,53 +54,106 @@ docker-compose up --build
 
 Якщо ви хочете використовувати цей проект як основу для свого власного проекту:
 
-#### Крок 1: Клонувати репозиторій
+#### Крок 1: Клонувати оригінальний репозиторій
 
-```bash
-# Створити форк або клонувати
-git clone https://github.com/YOUR_GITHUB_USERNAME/ippt-microservices.git
+```powershell
+# Клонувати репозиторій на ваш комп'ютер
+git clone https://github.com/ORIGINAL_OWNER/ippt-microservices.git
 cd ippt-microservices
 ```
 
-#### Крок 2: Налаштувати свій GitHub репозиторій
+**Примітка:** Замініть `ORIGINAL_OWNER` на username власника оригінального репозиторію, з якого ви клонуєте.
 
-1. **Створити новий репозиторій на GitHub:**
-   - Перейдіть на https://github.com/new
-   - Назва: `ippt-microservices` (або ваша назва)
-   - Вибрати Public або Private
-   - НЕ ініціалізувати з README (ми вже маємо)
+#### Крок 2: Створити свій новий репозиторій на GitHub
 
-2. **Змінити remote URL:**
-```bash
-# Видалити поточний remote
+1. **Перейдіть на https://github.com/new**
+2. **Заповніть форму:**
+   - **Repository name**: `ippt-microservices` (або ваша назва)
+   - **Description**: (за потреби, опціонально)
+   - **Visibility**: Public або Private (за вашим вибором)
+   - **НЕ** вибирайте "Initialize this repository with a README"
+   - **НЕ** додавайте .gitignore або license (проект вже має)
+3. **Натисніть "Create repository"**
+
+#### Крок 3: Змінити remote URL на ваш репозиторій
+
+```powershell
+# Видалити посилання на оригінальний репозиторій
 git remote remove origin
 
-# Додати ваш GitHub репозиторій
-git remote add origin https://github.com/ВАШ_GITHUB_USERNAME/ippt-microservices.git
+# Додати посилання на ваш новий репозиторій (замініть YOUR_GITHUB_USERNAME на ваш GitHub username)
+git remote add origin https://github.com/YOUR_GITHUB_USERNAME/ippt-microservices.git
 
-# Перевірити
+# Перевірити що remote змінено
 git remote -v
+# Має показати: origin -> https://github.com/YOUR_GITHUB_USERNAME/ippt-microservices.git
 ```
 
-3. **Змінити назву в проекті (опціонально):**
-```bash
-# Замінити всі згадки старого назви на ваше
-# Наприклад, якщо змінюєте "YOUR_GITHUB_USERNAME" на "yourusername":
-# Windows PowerShell
-(Get-Content .github/workflows/ci-cd.yml) -replace 'YOUR_GITHUB_USERNAME', 'yourusername' | Set-Content .github/workflows/ci-cd.yml
-(Get-Content k8s/*/deployment.yaml) -replace 'YOUR_GITHUB_USERNAME', 'yourusername' | Set-Content k8s/*/deployment.yaml
+#### Крок 4: Замінити плейсхолдери на ваш GitHub username
 
-# Linux/Mac
-sed -i 's/YOUR_GITHUB_USERNAME/yourusername/g' .github/workflows/ci-cd.yml
-sed -i 's/YOUR_GITHUB_USERNAME/yourusername/g' k8s/*/deployment.yaml
+Потрібно замінити `YOUR_GITHUB_USERNAME` на ваш реальний GitHub username в наступних файлах:
+
+**Windows PowerShell:**
+```powershell
+# Замінити в CI/CD workflow
+(Get-Content .github/workflows/ci-cd.yml) -replace 'YOUR_GITHUB_USERNAME', 'ваш_github_username' | Set-Content .github/workflows/ci-cd.yml
+
+# Замінити в Kubernetes deployment файлах
+Get-ChildItem -Path k8s -Recurse -Filter "deployment.yaml" | ForEach-Object {
+    (Get-Content $_.FullName) -replace 'YOUR_GITHUB_USERNAME', 'ваш_github_username' | Set-Content $_.FullName
+}
+
+# Перевірити що заміна пройшла успішно
+Write-Host "Перевірка замінених файлів:"
+Select-String -Path .github/workflows/ci-cd.yml -Pattern "ghcr.io" | Select-Object -First 1
+Select-String -Path k8s/*/deployment.yaml -Pattern "ghcr.io" | Select-Object -First 1
 ```
 
-4. **Закомітити та запушити:**
-```bash
+**Або вручну (якщо скрипт не працює):**
+- Відкрити `.github/workflows/ci-cd.yml` та замінити `YOUR_GITHUB_USERNAME` на ваш username
+- Відкрити файли `k8s/auth-service/deployment.yaml`, `k8s/catalog-service/deployment.yaml`, `k8s/order-service/deployment.yaml`, `k8s/client-frontend/deployment.yaml`, `k8s/admin-frontend/deployment.yaml` та замінити `YOUR_GITHUB_USERNAME` на ваш username
+
+#### Крок 5: Закомітити та запушити в ваш репозиторій
+
+```powershell
+# Додати всі зміни
 git add .
-git commit -m "Initial commit - forked from original project"
+
+# Зробити commit
+git commit -m "Initial commit - setup project"
+
+# Запушити в ваш репозиторій
 git push -u origin main
 ```
+
+**Примітка:** Якщо виникне помилка "fatal: couldn't find remote ref main", переконайтеся що ви використовуєте `main` гілку або замініть на `master`:
+```powershell
+git branch -M main  # Перейменувати поточну гілку в main
+git push -u origin main
+```
+
+#### Крок 6: Перевірити результат
+
+1. Перейдіть на ваш GitHub репозиторій: `https://github.com/YOUR_GITHUB_USERNAME/ippt-microservices`
+2. Переконайтеся що весь код завантажено
+3. Перевірте що README відображається правильно
+4. Перевірте що всі файли на місці (services/, k8s/, .github/, тощо)
+
+**Готово!** Тепер проект у вашому GitHub репозиторії та готовий до використання.
+
+### Важливо
+
+- Після цього ви можете продовжувати розробку в своєму репозиторії
+- Всі commits будуть відображатися під вашим ім'ям
+- Якщо хочете отримувати оновлення з оригінального репозиторію, додайте його як upstream:
+  ```powershell
+  git remote add upstream https://github.com/ORIGINAL_OWNER/ippt-microservices.git
+  ```
+  Потім ви можете отримати оновлення:
+  ```powershell
+  git fetch upstream
+  git merge upstream/main
+  ```
 
 #### Крок 3: Встановити необхідне програмне забезпечення
 
