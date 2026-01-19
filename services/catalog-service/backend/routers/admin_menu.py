@@ -14,7 +14,7 @@ from backend.schemas.menu import MenuItemCreate, MenuItemUpdate, MenuItemRead
 router = APIRouter(prefix="/admin/products", tags=["admin:products"])
 
 
-@router.post("", response_model=MenuItemRead)
+@router.post("", response_model=MenuItemRead, status_code=201)
 def create_item(
     payload: MenuItemCreate,
     db: Session = Depends(get_db),
@@ -72,7 +72,7 @@ def update_item(
     return item
 
 
-@router.delete("/{item_id}")
+@router.delete("/{item_id}", status_code=204)
 def delete_item(
     item_id: int,
     db: Session = Depends(get_db),
@@ -90,4 +90,4 @@ def delete_item(
     from backend.routers.menu import clear_products_cache
     clear_products_cache()
     
-    return {"message": "Menu item deleted"}
+    return None

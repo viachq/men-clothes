@@ -11,7 +11,7 @@ from backend.schemas.category import CategoryCreate, CategoryUpdate, CategoryRea
 router = APIRouter(prefix="/admin/categories", tags=["admin:categories"])
 
 
-@router.post("", response_model=CategoryRead)
+@router.post("", response_model=CategoryRead, status_code=201)
 def create_category(payload: CategoryCreate, db: Session = Depends(get_db), _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.MANAGER))):
     if db.query(Category).filter(Category.name == payload.name).first():
         raise HTTPException(status_code=400, detail="Category name already exists")
@@ -44,7 +44,7 @@ def update_category(category_id: int, payload: CategoryUpdate, db: Session = Dep
     return c
 
 
-@router.delete("/{category_id}")
+@router.delete("/{category_id}", status_code=204)
 def delete_category(category_id: int, db: Session = Depends(get_db), _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.MANAGER))):
     c = db.query(Category).filter(Category.id == category_id).first()
     if not c:
@@ -56,6 +56,6 @@ def delete_category(category_id: int, db: Session = Depends(get_db), _: object =
     from backend.routers.categories import clear_categories_cache
     clear_categories_cache()
     
-    return {"message": "Category deleted"}
+    return None
 
 

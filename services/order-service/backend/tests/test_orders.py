@@ -20,7 +20,7 @@ class TestCreateOrder:
         """Test creating order with empty cart."""
         response = client.post(
             "/orders",
-            json={"delivery_address": "Test Address"},
+            json={"address": "Test Address 123"},
             headers=auth_headers
         )
         assert response.status_code == 400
@@ -30,7 +30,7 @@ class TestCreateOrder:
         """Test creating order from cart."""
         response = client.post(
             "/orders",
-            json={"delivery_address": "Test Address"},
+            json={"address": "Test Address 123"},
             headers=auth_headers
         )
         assert response.status_code == 201
