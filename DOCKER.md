@@ -78,8 +78,6 @@ docker-compose down -v
 ```bash
 # .env файл
 JWT_SECRET_KEY=your-secret-key-here
-TELEGRAM_BOT_TOKEN=your-telegram-bot-token
-TELEGRAM_ADMIN_CHAT_IDS=123456789
 ```
 
 ## Збірка образів

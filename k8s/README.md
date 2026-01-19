@@ -8,7 +8,7 @@
 k8s/
 ├── namespace.yaml              # Namespace для всіх ресурсів
 ├── configmap.yaml              # Конфігурація (нечутливі дані)
-├── secret.yaml                 # Секрети (JWT, Telegram токени)
+├── secret.yaml                 # Секрети (JWT ключі)
 ├── ingress.yaml                # Ingress для доступу до сервісів
 ├── auth-service/
 │   ├── deployment.yaml         # Deployment (2 replicas)
@@ -170,13 +170,11 @@ spec:
 - Service URLs для міжсервісної комунікації
 - Database paths
 - JWT algorithm та expires
-- Telegram settings (не токени)
 
 ### Secret
 
 Містить чутливі дані:
 - JWT_SECRET_KEY
-- TELEGRAM_BOT_TOKEN
 
 **Важливо**: Для production змініть значення в secret.yaml!
 
@@ -214,7 +212,6 @@ spec:
 # Створити secret з файлу
 kubectl create secret generic food-delivery-secrets \
   --from-file=JWT_SECRET_KEY=./secrets/jwt-key.txt \
-  --from-file=TELEGRAM_BOT_TOKEN=./secrets/telegram-token.txt \
   -n food-delivery
 ```
 

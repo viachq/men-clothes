@@ -267,15 +267,43 @@ kubectl get svc -n food-delivery
 
 ## 🔄 CI/CD
 
-### GitHub Actions Pipeline
+### GitHub Actions Pipelines
 
-CI/CD pipeline налаштований в `.github/workflows/auth-service-tests.yml`:
+Проект має кілька CI/CD workflows:
+
+#### 1. Повний CI/CD Pipeline (`.github/workflows/ci-cd.yml`)
 
 **Етапи pipeline:**
+1. **Build Docker Images** - збірка образів для всіх сервісів
+2. **Push to Registry** - завантаження до GitHub Container Registry (ghcr.io)
+3. **Deploy to Kubernetes** - автоматичний деплой (опціонально)
+
+**Сервіси:**
+- auth-service
+- catalog-service
+- order-service
+- client-frontend
+- admin-frontend
+
+**Registry:** `ghcr.io/viachq/ippt-microservices-{service-name}`
+
+#### 2. Auth Service Tests (`.github/workflows/auth-service-tests.yml`)
+
+**Етапи:**
 1. **Lint** - перевірка коду з flake8
 2. **Tests** - запуск unit tests з pytest
 3. **Coverage** - перевірка покриття коду (>= 70%)
 4. **Reports** - завантаження coverage reports
+
+#### 3. Catalog Service Tests (`.github/workflows/catalog-service-tests.yml`)
+
+- Lint перевірка
+- Тести (якщо додані)
+
+#### 4. Order Service Tests (`.github/workflows/order-service-tests.yml`)
+
+- Lint перевірка
+- Тести (якщо додані)
 
 ### Запуск тестів локально
 

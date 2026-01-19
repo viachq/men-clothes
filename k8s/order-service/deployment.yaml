@@ -53,21 +53,6 @@ spec:
             configMapKeyRef:
               name: food-delivery-config
               key: CATALOG_SERVICE_URL
-        - name: TELEGRAM_BOT_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: food-delivery-secrets
-              key: TELEGRAM_BOT_TOKEN
-        - name: TELEGRAM_NOTIFICATIONS_ENABLED
-          valueFrom:
-            configMapKeyRef:
-              name: food-delivery-config
-              key: TELEGRAM_NOTIFICATIONS_ENABLED
-        - name: TELEGRAM_ADMIN_CHAT_IDS
-          valueFrom:
-            configMapKeyRef:
-              name: food-delivery-config
-              key: TELEGRAM_ADMIN_CHAT_IDS
         volumeMounts:
         - name: order-db-storage
           mountPath: /app/data
@@ -80,7 +65,7 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /docs
+            path: /health
             port: 8003
           initialDelaySeconds: 30
           periodSeconds: 10
@@ -88,7 +73,7 @@ spec:
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /docs
+            path: /health
             port: 8003
           initialDelaySeconds: 10
           periodSeconds: 5

@@ -77,9 +77,6 @@ services:
       - SERVICE_PORT=8003
       - AUTH_SERVICE_URL=http://auth-service:8001
       - CATALOG_SERVICE_URL=http://catalog-service:8002
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-8322734845:AAGQDbGSboYa9qP5G6H-omfAnnPL0GDiwQE}
-      - TELEGRAM_ADMIN_CHAT_IDS=${TELEGRAM_ADMIN_CHAT_IDS:-827612750}
-      - TELEGRAM_NOTIFICATIONS_ENABLED=${TELEGRAM_NOTIFICATIONS_ENABLED:-true}
     volumes:
       # Монтуємо директорію з БД з хоста (файли створюються автоматично якщо не існують)
       - ./:/app/host-db:ro

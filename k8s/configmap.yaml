@@ -24,10 +24,6 @@ data:
   DATABASE_URL_CATALOG: "sqlite:///data/catalog.db"
   DATABASE_URL_ORDER: "sqlite:///data/order.db"
   
-  # Telegram settings (non-sensitive)
-  TELEGRAM_NOTIFICATIONS_ENABLED: "true"
-  TELEGRAM_ADMIN_CHAT_IDS: "827612750"
-  
   # JWT settings (non-sensitive)
   JWT_ALGORITHM: "HS256"
   JWT_EXPIRES_MINUTES: "10080"
