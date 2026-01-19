@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: admin-frontend
-  namespace: food-delivery
+  namespace: ippt-microservices
   labels:
     app: admin-frontend
     service: frontend

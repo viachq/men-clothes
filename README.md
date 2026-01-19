@@ -669,28 +669,28 @@ kubectl apply -f k8s/ingress.yaml
 
 ```bash
 # Перевірити pods
-kubectl get pods -n food-delivery
+kubectl get pods -n ippt-microservices
 
 # Перевірити services
-kubectl get svc -n food-delivery
+kubectl get svc -n ippt-microservices
 
 # Перевірити deployments
-kubectl get deployments -n food-delivery
+kubectl get deployments -n ippt-microservices
 
 # Переглянути логи
-kubectl logs -f deployment/auth-service -n food-delivery
+kubectl logs -f deployment/auth-service -n ippt-microservices
 ```
 
 #### 6. Доступ до сервісів
 
 ```bash
 # Для minikube - отримати URL
-minikube service list -n food-delivery
+minikube service list -n ippt-microservices
 
 # Або прокси для локального доступу
-kubectl port-forward svc/auth-service 8001:8001 -n food-delivery
-kubectl port-forward svc/catalog-service 8002:8002 -n food-delivery
-kubectl port-forward svc/order-service 8003:8003 -n food-delivery
+kubectl port-forward svc/auth-service 8001:8001 -n ippt-microservices
+kubectl port-forward svc/catalog-service 8002:8002 -n ippt-microservices
+kubectl port-forward svc/order-service 8003:8003 -n ippt-microservices
 ```
 
 ### Деплой в Cloud кластер (GKE, EKS, AKS)
@@ -755,7 +755,7 @@ kubectl apply -f k8s/
 
 Проект використовує наступні Kubernetes ресурси:
 
-- **Namespace**: `food-delivery` - ізоляція ресурсів
+- **Namespace**: `ippt-microservices` - ізоляція ресурсів
 - **Deployment** - 2 replicas для кожного сервісу (висока доступність)
 - **Service** - ClusterIP для внутрішньої комунікації між сервісами
 - **ConfigMap** - конфігурація сервісів (URLs, налаштування)
@@ -979,7 +979,7 @@ npm install
 **Помилка: "ImagePullBackOff"**
 ```bash
 # Перевірити що образи зібрані та доступні
-kubectl describe pod <pod-name> -n food-delivery
+kubectl describe pod <pod-name> -n ippt-microservices
 
 # Для minikube - переконатися що використовується minikube registry
 eval $(minikube docker-env)
@@ -988,8 +988,8 @@ eval $(minikube docker-env)
 **Помилка: "Connection refused"**
 ```bash
 # Перевірити що сервіси працюють
-kubectl get pods -n food-delivery
-kubectl logs <pod-name> -n food-delivery
+kubectl get pods -n ippt-microservices
+kubectl logs <pod-name> -n ippt-microservices
 ```
 
 ## 📝 Ліцензія

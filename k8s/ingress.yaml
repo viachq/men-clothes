@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: food-delivery-ingress
-  namespace: food-delivery
+  name: ippt-microservices-ingress
+  namespace: ippt-microservices
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
@@ -10,7 +10,7 @@ spec:
   ingressClassName: nginx
   rules:
   # Backend Services
-  - host: api.food-delivery.local
+  - host: api.ippt-microservices.local
     http:
       paths:
       - path: /auth
@@ -35,7 +35,7 @@ spec:
             port:
               number: 8003
   # Frontend Services
-  - host: food-delivery.local
+  - host: ippt-microservices.local
     http:
       paths:
       - path: /
@@ -45,7 +45,7 @@ spec:
             name: client-frontend
             port:
               number: 5174
-  - host: admin.food-delivery.local
+  - host: admin.ippt-microservices.local
     http:
       paths:
       - path: /

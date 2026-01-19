@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: order-service
-  namespace: food-delivery
+  namespace: ippt-microservices
   labels:
     app: order-service
     service: backend
@@ -29,29 +29,29 @@ spec:
         - name: JWT_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: food-delivery-secrets
+              name: ippt-microservices-secrets
               key: JWT_SECRET_KEY
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
-              name: food-delivery-config
+              name: ippt-microservices-config
               key: DATABASE_URL_ORDER
         - name: SERVICE_NAME
           value: "order-service"
         - name: SERVICE_PORT
           valueFrom:
             configMapKeyRef:
-              name: food-delivery-config
+              name: ippt-microservices-config
               key: SERVICE_PORT_ORDER
         - name: AUTH_SERVICE_URL
           valueFrom:
             configMapKeyRef:
-              name: food-delivery-config
+              name: ippt-microservices-config
               key: AUTH_SERVICE_URL
         - name: CATALOG_SERVICE_URL
           valueFrom:
             configMapKeyRef:
-              name: food-delivery-config
+              name: ippt-microservices-config
               key: CATALOG_SERVICE_URL
         volumeMounts:
         - name: order-db-storage

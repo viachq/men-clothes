@@ -39,23 +39,23 @@ fi
 
 # Чекати поки pods стануть готовими
 echo "⏳ Waiting for pods to be ready..."
-kubectl wait --for=condition=ready pod -l app=auth-service -n food-delivery --timeout=120s || true
-kubectl wait --for=condition=ready pod -l app=catalog-service -n food-delivery --timeout=120s || true
-kubectl wait --for=condition=ready pod -l app=order-service -n food-delivery --timeout=120s || true
+kubectl wait --for=condition=ready pod -l app=auth-service -n ippt-microservices --timeout=120s || true
+kubectl wait --for=condition=ready pod -l app=catalog-service -n ippt-microservices --timeout=120s || true
+kubectl wait --for=condition=ready pod -l app=order-service -n ippt-microservices --timeout=120s || true
 
 # Показати статус
 echo ""
 echo "✅ Deployment complete!"
 echo ""
 echo "📊 Status:"
-kubectl get pods -n food-delivery
+kubectl get pods -n ippt-microservices
 echo ""
 echo "🔗 Services:"
-kubectl get svc -n food-delivery
+kubectl get svc -n ippt-microservices
 echo ""
 echo "💡 To access services, use port-forwarding:"
-echo "   kubectl port-forward svc/auth-service 8001:8001 -n food-delivery"
-echo "   kubectl port-forward svc/catalog-service 8002:8002 -n food-delivery"
-echo "   kubectl port-forward svc/order-service 8003:8003 -n food-delivery"
-echo "   kubectl port-forward svc/client-frontend 5174:5174 -n food-delivery"
-echo "   kubectl port-forward svc/admin-frontend 5173:5173 -n food-delivery"
+echo "   kubectl port-forward svc/auth-service 8001:8001 -n ippt-microservices"
+echo "   kubectl port-forward svc/catalog-service 8002:8002 -n ippt-microservices"
+echo "   kubectl port-forward svc/order-service 8003:8003 -n ippt-microservices"
+echo "   kubectl port-forward svc/client-frontend 5174:5174 -n ippt-microservices"
+echo "   kubectl port-forward svc/admin-frontend 5173:5173 -n ippt-microservices"

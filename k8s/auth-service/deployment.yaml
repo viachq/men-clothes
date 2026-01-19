@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-service
-  namespace: food-delivery
+  namespace: ippt-microservices
   labels:
     app: auth-service
     service: backend
@@ -29,19 +29,19 @@ spec:
         - name: JWT_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: food-delivery-secrets
+              name: ippt-microservices-secrets
               key: JWT_SECRET_KEY
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
-              name: food-delivery-config
+              name: ippt-microservices-config
               key: DATABASE_URL_AUTH
         - name: SERVICE_NAME
           value: "auth-service"
         - name: SERVICE_PORT
           valueFrom:
             configMapKeyRef:
-              name: food-delivery-config
+              name: ippt-microservices-config
               key: SERVICE_PORT_AUTH
         volumeMounts:
         - name: auth-db-storage

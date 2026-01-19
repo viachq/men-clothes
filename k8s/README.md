@@ -88,16 +88,16 @@ kubectl apply -f k8s/ingress.yaml
 
 ```bash
 # Перевірити pods
-kubectl get pods -n food-delivery
+kubectl get pods -n ippt-microservices
 
 # Перевірити services
-kubectl get svc -n food-delivery
+kubectl get svc -n ippt-microservices
 
 # Перевірити deployments
-kubectl get deployments -n food-delivery
+kubectl get deployments -n ippt-microservices
 
 # Перевірити logs
-kubectl logs -f deployment/auth-service -n food-delivery
+kubectl logs -f deployment/auth-service -n ippt-microservices
 ```
 
 ### 4. Доступ до сервісів
@@ -106,19 +106,19 @@ kubectl logs -f deployment/auth-service -n food-delivery
 
 ```bash
 # Auth Service
-kubectl port-forward svc/auth-service 8001:8001 -n food-delivery
+kubectl port-forward svc/auth-service 8001:8001 -n ippt-microservices
 
 # Catalog Service
-kubectl port-forward svc/catalog-service 8002:8002 -n food-delivery
+kubectl port-forward svc/catalog-service 8002:8002 -n ippt-microservices
 
 # Order Service
-kubectl port-forward svc/order-service 8003:8003 -n food-delivery
+kubectl port-forward svc/order-service 8003:8003 -n ippt-microservices
 
 # Client Frontend
-kubectl port-forward svc/client-frontend 5174:5174 -n food-delivery
+kubectl port-forward svc/client-frontend 5174:5174 -n ippt-microservices
 
 # Admin Frontend
-kubectl port-forward svc/admin-frontend 5173:5173 -n food-delivery
+kubectl port-forward svc/admin-frontend 5173:5173 -n ippt-microservices
 ```
 
 #### Варіант 2: Ingress (потрібен ingress controller)
@@ -132,9 +132,9 @@ minikube addons enable ingress
 minikube ip
 
 # Додати:
-# <minikube-ip> food-delivery.local
-# <minikube-ip> admin.food-delivery.local
-# <minikube-ip> api.food-delivery.local
+# <minikube-ip> ippt-microservices.local
+# <minikube-ip> admin.ippt-microservices.local
+# <minikube-ip> api.ippt-microservices.local
 ```
 
 #### Варіант 3: NodePort (альтернатива Ingress)
@@ -181,9 +181,9 @@ spec:
 ### Ingress
 
 Налаштований для:
-- `food-delivery.local` → client-frontend
-- `admin.food-delivery.local` → admin-frontend
-- `api.food-delivery.local` → backend services
+- `ippt-microservices.local` → client-frontend
+- `admin.ippt-microservices.local` → admin-frontend
+- `api.ippt-microservices.local` → backend services
 
 ## Production рекомендації
 
@@ -197,7 +197,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: auth-db-pvc
-  namespace: food-delivery
+  namespace: ippt-microservices
 spec:
   accessModes:
     - ReadWriteOnce
@@ -210,9 +210,9 @@ spec:
 
 ```bash
 # Створити secret з файлу
-kubectl create secret generic food-delivery-secrets \
+kubectl create secret generic ippt-microservices-secrets \
   --from-file=JWT_SECRET_KEY=./secrets/jwt-key.txt \
-  -n food-delivery
+  -n ippt-microservices
 ```
 
 ### 3. Resource Requests/Limits
@@ -226,7 +226,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: auth-service-hpa
-  namespace: food-delivery
+  namespace: ippt-microservices
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -247,7 +247,7 @@ spec:
 
 ```bash
 # Видалити всі ресурси
-kubectl delete namespace food-delivery
+kubectl delete namespace ippt-microservices
 
 # Або окремо
 kubectl delete -f k8s/
@@ -259,13 +259,13 @@ kubectl delete -f k8s/
 
 ```bash
 # Перевірити події
-kubectl get events -n food-delivery --sort-by='.lastTimestamp'
+kubectl get events -n ippt-microservices --sort-by='.lastTimestamp'
 
 # Перевірити logs
-kubectl logs <pod-name> -n food-delivery
+kubectl logs <pod-name> -n ippt-microservices
 
 # Опис pod
-kubectl describe pod <pod-name> -n food-delivery
+kubectl describe pod <pod-name> -n ippt-microservices
 ```
 
 ### Images не знайдено
@@ -283,10 +283,10 @@ docker images | grep auth-service
 
 ```bash
 # Перевірити endpoints
-kubectl get endpoints -n food-delivery
+kubectl get endpoints -n ippt-microservices
 
 # Перевірити service
-kubectl describe svc auth-service -n food-delivery
+kubectl describe svc auth-service -n ippt-microservices
 ```
 
 ## Додаткові ресурси

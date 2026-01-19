@@ -327,19 +327,19 @@ jobs:
         
         # Wait for deployments to be ready
         echo "⏳ Waiting for deployments to be ready..."
-        kubectl wait --for=condition=available --timeout=300s deployment/auth-service -n food-delivery || true
-        kubectl wait --for=condition=available --timeout=300s deployment/catalog-service -n food-delivery || true
-        kubectl wait --for=condition=available --timeout=300s deployment/order-service -n food-delivery || true
+        kubectl wait --for=condition=available --timeout=300s deployment/auth-service -n ippt-microservices || true
+        kubectl wait --for=condition=available --timeout=300s deployment/catalog-service -n ippt-microservices || true
+        kubectl wait --for=condition=available --timeout=300s deployment/order-service -n ippt-microservices || true
         
         # Show deployment status
         echo ""
         echo "✅ Deployment complete!"
         echo ""
         echo "📊 Deployment Status:"
-        kubectl get deployments -n food-delivery
+        kubectl get deployments -n ippt-microservices
         echo ""
         echo "📦 Pods Status:"
-        kubectl get pods -n food-delivery
+        kubectl get pods -n ippt-microservices
         echo ""
         echo "🔗 Services:"
-        kubectl get svc -n food-delivery
+        kubectl get svc -n ippt-microservices

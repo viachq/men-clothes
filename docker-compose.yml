@@ -19,7 +19,7 @@ services:
       - ./auth.db-shm:/app/data/auth.db-shm
       - ./auth.db-wal:/app/data/auth.db-wal
     networks:
-      - food-delivery-network
+      - ippt-microservices-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').read()"]
@@ -50,7 +50,7 @@ services:
       - ./catalog.db-shm:/app/data/catalog.db-shm
       - ./catalog.db-wal:/app/data/catalog.db-wal
     networks:
-      - food-delivery-network
+      - ippt-microservices-network
     depends_on:
       auth-service:
         condition: service_healthy
@@ -84,7 +84,7 @@ services:
       - ./order.db-shm:/app/data/order.db-shm
       - ./order.db-wal:/app/data/order.db-wal
     networks:
-      - food-delivery-network
+      - ippt-microservices-network
     depends_on:
       auth-service:
         condition: service_healthy
@@ -107,7 +107,7 @@ services:
     ports:
       - "5174:5174"
     networks:
-      - food-delivery-network
+      - ippt-microservices-network
     depends_on:
       - auth-service
       - catalog-service
@@ -123,7 +123,7 @@ services:
     ports:
       - "5173:5173"
     networks:
-      - food-delivery-network
+      - ippt-microservices-network
     depends_on:
       - auth-service
       - catalog-service
@@ -131,5 +131,5 @@ services:
     restart: unless-stopped
 
 networks:
-  food-delivery-network:
+  ippt-microservices-network:
     driver: bridge

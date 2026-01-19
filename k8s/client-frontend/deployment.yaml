@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: client-frontend
-  namespace: food-delivery
+  namespace: ippt-microservices
   labels:
     app: client-frontend
     service: frontend

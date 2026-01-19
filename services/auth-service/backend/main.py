@@ -73,15 +73,7 @@ def init_default_users():
         db.close()
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database on application startup."""
-    init_db()
-    init_default_users()
-    print("[OK] Auth service: Startup complete")
-
-
-# CORS middleware
+# CORS middleware - must be added before routers
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -89,6 +81,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on application startup."""
+    init_db()
+    init_default_users()
+    print("[OK] Auth service: Startup complete")
 
 # Include routers (only auth-related routers for auth-service)
 # IMPORTANT: Admin routers must be registered BEFORE public routers

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: food-delivery
+  name: ippt-microservices
   labels:
-    name: food-delivery
-    app: food-delivery-microservices
+    name: ippt-microservices
+    app: ippt-microservices

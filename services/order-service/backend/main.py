@@ -181,15 +181,7 @@ def init_default_data():
         db.close()
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database on application startup."""
-    init_db()
-    init_default_data()
-    print("[OK] Order service: Startup complete")
-
-
-# CORS middleware
+# CORS middleware - must be added before routers
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -197,6 +189,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on application startup."""
+    init_db()
+    init_default_data()
+    print("[OK] Order service: Startup complete")
 
 # Include routers
 # IMPORTANT: Admin routers must be registered BEFORE public routers
