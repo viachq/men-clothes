@@ -42,15 +42,22 @@ def test_db():
         Base.metadata.drop_all(bind=engine)
 
 
-@pytest.fixture(scope="function")
-def client(test_db):
-    """Create a test client with overridden database dependency."""
-    # Clear cache before each test
+@pytest.fixture(scope="function", autouse=True)
+def clear_cache_before_test():
+    """Automatically clear cache before each test."""
     from backend.routers.categories import clear_categories_cache
     from backend.routers.menu import clear_products_cache
     clear_categories_cache()
     clear_products_cache()
-    
+    yield
+    # Clear cache after test too
+    clear_categories_cache()
+    clear_products_cache()
+
+
+@pytest.fixture(scope="function")
+def client(test_db):
+    """Create a test client with overridden database dependency."""
     def override_get_db():
         try:
             yield test_db
@@ -60,10 +67,6 @@ def client(test_db):
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
     app.dependency_overrides.clear()
-    
-    # Clear cache after test
-    clear_categories_cache()
-    clear_products_cache()
 
 
 @pytest.fixture
@@ -164,9 +167,13 @@ def manager_auth_headers(manager_user):
 @pytest.fixture(autouse=True)
 def mock_auth_client():
     """Mock auth client to avoid external HTTP calls."""
-    with patch('backend.deps.get_auth_client') as mock_get_client:
+    # Patch both places where get_auth_client is used
+    with patch('backend.clients.auth_client.get_auth_client') as mock_get_client_clients, \
+         patch('backend.deps.get_auth_client') as mock_get_client_deps:
+        
         mock_client = Mock()
-        mock_get_client.return_value = mock_client
+        mock_get_client_clients.return_value = mock_client
+        mock_get_client_deps.return_value = mock_client
         
         def get_user_by_username(username):
             users = {

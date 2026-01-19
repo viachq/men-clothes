@@ -13,8 +13,14 @@ class TestListProducts:
         assert response.status_code == 200
         assert response.json() == []
     
-    def test_list_products_with_data(self, client, test_menu_item):
+    def test_list_products_with_data(self, client, test_menu_item, test_db):
         """Test listing products with data."""
+        # Force refresh the cache
+        test_db.refresh(test_menu_item)
+        # Clear cache to force fresh query
+        from backend.routers.menu import clear_products_cache
+        clear_products_cache()
+        
         response = client.get("/products/")
         assert response.status_code == 200
         data = response.json()

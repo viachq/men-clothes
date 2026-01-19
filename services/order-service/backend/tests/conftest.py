@@ -156,9 +156,13 @@ def admin_auth_headers(admin_user):
 @pytest.fixture(autouse=True)
 def mock_auth_client():
     """Mock auth client to avoid external HTTP calls."""
-    with patch('backend.deps.get_auth_client') as mock_get_client:
+    # Patch both places where get_auth_client is used
+    with patch('backend.clients.auth_client.get_auth_client') as mock_get_client_clients, \
+         patch('backend.deps.get_auth_client') as mock_get_client_deps:
+        
         mock_client = Mock()
-        mock_get_client.return_value = mock_client
+        mock_get_client_clients.return_value = mock_client
+        mock_get_client_deps.return_value = mock_client
         
         def get_user_by_username(username):
             users = {

@@ -13,8 +13,14 @@ class TestListCategories:
         assert response.status_code == 200
         assert response.json() == []
     
-    def test_list_categories_with_data(self, client, test_category):
+    def test_list_categories_with_data(self, client, test_category, test_db):
         """Test listing categories with data."""
+        # Force refresh the cache by ensuring category is committed
+        test_db.refresh(test_category)
+        # Clear cache to force fresh query
+        from backend.routers.categories import clear_categories_cache
+        clear_categories_cache()
+        
         response = client.get("/categories/")
         assert response.status_code == 200
         data = response.json()
