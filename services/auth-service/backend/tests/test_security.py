@@ -27,15 +27,12 @@ class TestHashPassword:
         assert len(hashed) > 0
         assert hashed != password
 
-    def test_hash_password_contains_salt_and_hash(self):
-        """Test that hash contains salt and hash separated by $."""
+    def test_hash_password_is_bcrypt_format(self):
+        """Test that the hash uses the bcrypt format ($2b$ / $2a$, 60 chars)."""
         password = "testpassword123"
         hashed = hash_password(password)
-        assert '$' in hashed
-        parts = hashed.split('$')
-        assert len(parts) == 2
-        assert len(parts[0]) > 0  # salt
-        assert len(parts[1]) > 0  # hash
+        assert hashed.startswith(("$2b$", "$2a$", "$2y$"))
+        assert len(hashed) == 60
 
     def test_hash_password_different_passwords_different_hashes(self):
         """Test that different passwords produce different hashes."""
@@ -70,14 +67,13 @@ class TestVerifyPassword:
         hashed = hash_password(password)
         assert verify_password(wrong_password, hashed) is False
 
-    def test_verify_password_legacy_password(self):
-        """Test backwards compatibility with legacy passwords without salt."""
+    def test_verify_password_rejects_legacy_sha256(self):
+        """Unsalted legacy SHA256 hashes are intentionally NOT accepted (security hardening)."""
         import hashlib
         password = "legacypassword"
-        # Legacy format: just SHA256 hash without salt
         legacy_hash = hashlib.sha256(password.encode()).hexdigest()
-        assert verify_password(password, legacy_hash) is True
-        assert verify_password("wrong", legacy_hash) is False
+        # The system migrated fully to bcrypt; raw SHA256 must never verify.
+        assert verify_password(password, legacy_hash) is False
 
     def test_verify_password_invalid_format(self):
         """Test that invalid hash format returns False."""

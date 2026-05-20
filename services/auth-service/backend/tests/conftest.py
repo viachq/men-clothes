@@ -59,7 +59,8 @@ def test_user(test_db):
     user = User(
         username="testuser",
         password=hash_password("testpass123"),
-        role=UserRole.CLIENT.value
+        role=UserRole.CLIENT.value,
+        is_verified=True,
     )
     test_db.add(user)
     test_db.commit()
@@ -73,7 +74,8 @@ def admin_user(test_db):
     user = User(
         username="admin",
         password=hash_password("admin123"),
-        role=UserRole.SYSTEM_ADMIN.value
+        role=UserRole.SYSTEM_ADMIN.value,
+        is_verified=True,
     )
     test_db.add(user)
     test_db.commit()
@@ -87,7 +89,8 @@ def manager_user(test_db):
     user = User(
         username="manager",
         password=hash_password("manager123"),
-        role=UserRole.MANAGER.value
+        role=UserRole.MANAGER.value,
+        is_verified=True,
     )
     test_db.add(user)
     test_db.commit()

@@ -9,10 +9,18 @@ export interface Order {
   user_id: number;
   status: string;
   total_price: number;
+  name: string | null;
+  surname: string | null;
+  phone: string | null;
+  email: string | null;
   delivery_address: string;
+  delivery_method: string | null;
+  comment: string | null;
   delivery_time: string | null;
   created_at: string;
   payment_method: string;
+  promo_code: string | null;
+  discount: number;
 }
 
 export interface OrderDetails extends Order {
@@ -34,6 +42,8 @@ export interface MenuItem {
   name: string;
   description: string | null;
   price: number;
+  old_price: number | null;
+  badge: string | null;
   category_id: number | null;
   image_url: string | null;
 }

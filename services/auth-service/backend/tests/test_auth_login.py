@@ -41,7 +41,7 @@ class TestLoginEndpoint:
         assert response.status_code == 401
         data = response.json()
         assert "detail" in data
-        assert "invalid" in data["detail"].lower()
+        assert "невірне" in data["detail"].lower()
 
     def test_login_invalid_password(self, client, test_user):
         """Test login with incorrect password."""
@@ -55,7 +55,7 @@ class TestLoginEndpoint:
         assert response.status_code == 401
         data = response.json()
         assert "detail" in data
-        assert "invalid" in data["detail"].lower()
+        assert "невірне" in data["detail"].lower()
 
     def test_login_missing_username(self, client):
         """Test login without username."""
@@ -104,6 +104,27 @@ class TestLoginEndpoint:
         assert payload is not None
         assert payload["sub"] == test_user.username
 
+    def test_login_unverified_user_blocked(self, client, test_db):
+        """Test that an unverified user cannot log in (email verification gate)."""
+        from backend.models.user import User
+        from backend.core.security import hash_password
+
+        unverified = User(
+            username="unverified",
+            password=hash_password("pass123"),
+            role="client",
+            is_verified=False,
+        )
+        test_db.add(unverified)
+        test_db.commit()
+
+        response = client.post(
+            "/auth/login",
+            json={"username": "unverified", "password": "pass123"}
+        )
+        assert response.status_code == 403
+        assert "email" in response.json()["detail"].lower()
+
     def test_login_different_users_get_different_tokens(self, client, test_db):
         """Test that different users get different tokens."""
         from backend.models.user import User
@@ -113,12 +134,14 @@ class TestLoginEndpoint:
         user1 = User(
             username="user1",
             password=hash_password("pass1"),
-            role="client"
+            role="client",
+            is_verified=True,
         )
         user2 = User(
             username="user2",
             password=hash_password("pass2"),
-            role="client"
+            role="client",
+            is_verified=True,
         )
         test_db.add(user1)
         test_db.add(user2)

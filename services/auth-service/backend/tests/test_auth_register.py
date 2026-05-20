@@ -22,15 +22,17 @@ class TestRegisterEndpoint:
         assert response.status_code == 201
         data = response.json()
         assert "message" in data
-        assert "user_id" in data
-        assert "username" in data
-        assert data["username"] == "newuser"
-        assert data["message"] == "User registered successfully"
+        assert "verification_token" in data
+        assert "user" in data
+        assert data["user"]["username"] == "newuser"
+        assert data["user"]["is_verified"] is False
 
-        # Verify user was created in database
+        # Verify user was created in database, unverified, with a token
         user = test_db.query(User).filter(User.username == "newuser").first()
         assert user is not None
         assert user.role == UserRole.CLIENT.value
+        assert user.is_verified is False
+        assert user.verification_token is not None
 
     def test_register_username_already_exists(self, client, test_user):
         """Test registration with existing username."""
@@ -44,7 +46,7 @@ class TestRegisterEndpoint:
         assert response.status_code == 400
         data = response.json()
         assert "detail" in data
-        assert "already exists" in data["detail"].lower()
+        assert "зайня" in data["detail"].lower()
 
     def test_register_username_too_short(self, client):
         """Test registration with username too short."""

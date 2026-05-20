@@ -15,7 +15,7 @@ export default function Menu() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '', price: 0, category_id: null as number | null, image_url: '' });
+  const [formData, setFormData] = useState({ name: '', description: '', price: 0, old_price: null as number | null, badge: null as string | null, category_id: null as number | null, image_url: '' });
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   
   // Categories state
@@ -62,7 +62,7 @@ export default function Menu() {
       }
       fetchItems();
       setModalOpen(false);
-      setFormData({ name: '', description: '', price: 0, category_id: null, image_url: '' });
+      setFormData({ name: '', description: '', price: 0, old_price: null, badge: null, category_id: null, image_url: '' });
       setEditingItem(null);
     } catch (error) {
       console.error('Failed to save item:', error);
@@ -82,16 +82,18 @@ export default function Menu() {
   const openItemModal = (item?: MenuItem) => {
     if (item) {
       setEditingItem(item);
-      setFormData({ 
-        name: item.name, 
-        description: item.description || '', 
-        price: item.price, 
+      setFormData({
+        name: item.name,
+        description: item.description || '',
+        price: item.price,
+        old_price: item.old_price,
+        badge: item.badge,
         category_id: item.category_id,
         image_url: item.image_url || ''
       });
     } else {
       setEditingItem(null);
-      setFormData({ name: '', description: '', price: 0, category_id: null, image_url: '' });
+      setFormData({ name: '', description: '', price: 0, old_price: null, badge: null, category_id: null, image_url: '' });
     }
     setModalOpen(true);
   };
@@ -136,7 +138,7 @@ export default function Menu() {
   };
 
   if (loading || categoriesLoading) {
-    return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neutral-900"></div></div>;
+    return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neutral-900 dark:border-white"></div></div>;
   }
 
   const filteredItems = categoryFilter
@@ -148,14 +150,14 @@ export default function Menu() {
       {/* Header with tabs */}
       <div className="mb-6">
         {/* Tabs */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-neutral-200 mb-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-neutral-200 dark:border-neutral-700 mb-4">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab('items')}
               className={`px-6 py-3 font-medium transition-colors ${
                 activeTab === 'items'
-                  ? 'text-neutral-900 border-b-2 border-neutral-900'
-                  : 'text-neutral-500 hover:text-neutral-700'
+                  ? 'text-neutral-900 dark:text-white border-b-2 border-neutral-900 dark:border-white'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-white'
               }`}
             >
               Товари
@@ -164,8 +166,8 @@ export default function Menu() {
               onClick={() => setActiveTab('categories')}
               className={`px-6 py-3 font-medium transition-colors ${
                 activeTab === 'categories'
-                  ? 'text-neutral-900 border-b-2 border-neutral-900'
-                  : 'text-neutral-500 hover:text-neutral-700'
+                  ? 'text-neutral-900 dark:text-white border-b-2 border-neutral-900 dark:border-white'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-white'
               }`}
             >
               Категорії
@@ -174,9 +176,9 @@ export default function Menu() {
 
           {/* Right side controls */}
           {activeTab === 'categories' && (
-            <button 
-              onClick={() => openCategoryModal()} 
-              className="inline-flex items-center gap-2 bg-neutral-900 text-white px-5 py-2.5 rounded-lg hover:bg-neutral-800 transition-colors font-medium text-sm"
+            <button
+              onClick={() => openCategoryModal()}
+              className="inline-flex items-center gap-2 bg-neutral-900 dark:bg-white text-white dark:text-black px-5 py-2.5 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors font-medium text-sm"
             >
               <Plus className="w-4 h-4" /> Додати категорію
             </button>
@@ -189,7 +191,7 @@ export default function Menu() {
                 onChange={(e) =>
                   setCategoryFilter(e.target.value ? Number(e.target.value) : null)
                 }
-                className="w-full sm:w-56 px-3 py-2 border border-neutral-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                className="w-full sm:w-56 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent"
               >
                 <option value="">Всі категорії ({items.length})</option>
                 {categories.map((category) => {
@@ -204,9 +206,9 @@ export default function Menu() {
                 })}
               </select>
 
-              <button 
-                onClick={() => openItemModal()} 
-                className="inline-flex items-center justify-center gap-2 bg-neutral-900 text-white px-5 py-2.5 rounded-lg hover:bg-neutral-800 transition-colors font-medium text-sm whitespace-nowrap"
+              <button
+                onClick={() => openItemModal()}
+                className="inline-flex items-center justify-center gap-2 bg-neutral-900 dark:bg-white text-white dark:text-black px-5 py-2.5 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors font-medium text-sm whitespace-nowrap"
               >
                 <Plus className="w-4 h-4" /> Додати товар
               </button>
@@ -220,9 +222,9 @@ export default function Menu() {
         <>
           {/* Items Grid */}
           {filteredItems.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg border border-neutral-200">
-              <p className="text-neutral-500 text-lg">Товари не знайдені</p>
-              <p className="text-neutral-400 text-sm mt-2">Спробуйте змінити фільтр або додати нові товари</p>
+            <div className="text-center py-12 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <p className="text-neutral-500 dark:text-neutral-400 text-lg">Товари не знайдені</p>
+              <p className="text-neutral-400 dark:text-neutral-500 text-sm mt-2">Спробуйте змінити фільтр або додати нові товари</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-5 md:gap-6 lg:gap-8">
@@ -233,10 +235,18 @@ export default function Menu() {
                   <Card
                     key={item.id}
                     padding="none"
-                    className="overflow-hidden border border-neutral-200 rounded-sm bg-white group hover:shadow-xl transition-all duration-500"
+                    className="overflow-hidden border border-neutral-200 dark:border-neutral-700 rounded-sm bg-white dark:bg-neutral-900 group hover:shadow-xl transition-all duration-500"
                   >
                     {/* Image Container - matching client side with aspect-square */}
-                    <div className="relative overflow-hidden aspect-square bg-white">
+                    <div className="relative overflow-hidden aspect-square bg-white dark:bg-neutral-900">
+                      {/* Badge */}
+                      {item.badge && (
+                        <span className={`absolute top-3 left-3 z-10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white ${
+                          item.badge === 'sale' ? 'bg-red-500' : 'bg-black'
+                        }`}>
+                          {item.badge === 'sale' ? 'Sale' : 'New'}
+                        </span>
+                      )}
                       {item.image_url ? (
                         <img 
                           src={item.image_url} 
@@ -244,7 +254,7 @@ export default function Menu() {
                           className="w-full h-full object-cover transition-transform duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-115" 
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
+                        <div className="w-full h-full bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center">
                           <span className="text-6xl text-neutral-200">👕</span>
                         </div>
                       )}
@@ -253,8 +263,13 @@ export default function Menu() {
                       <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900" />
 
                       {/* Price pill */}
-                      <div className="absolute bottom-3 right-3">
-                        <div className="px-3 py-1 rounded-full bg-black/80 text-white text-xs font-semibold shadow-lg">
+                      <div className="absolute bottom-3 right-3 flex items-center gap-1.5">
+                        {item.old_price && (
+                          <div className="px-2 py-1 rounded-full bg-white/80 text-neutral-500 text-[10px] font-medium line-through shadow">
+                            ₴{(item.old_price / 100).toFixed(0)}
+                          </div>
+                        )}
+                        <div className={`px-3 py-1 rounded-full text-white text-xs font-semibold shadow-lg ${item.old_price ? 'bg-red-500' : 'bg-black/80'}`}>
                           ₴{(item.price / 100).toFixed(0)}
                         </div>
                       </div>
@@ -262,31 +277,31 @@ export default function Menu() {
 
                     {/* Content - matching client side structure */}
                     <div className="flex flex-col flex-1 px-1 py-4">
-                      <h3 className="text-sm md:text-base font-semibold text-black mb-2 tracking-tight leading-snug line-clamp-2">
+                      <h3 className="text-sm md:text-base font-semibold text-black dark:text-white mb-2 tracking-tight leading-snug line-clamp-2">
                         {item.name}
                       </h3>
                       
                       {/* Description */}
                       {item.description && (
-                        <p className="text-xs text-neutral-500 mb-2 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2 line-clamp-2 leading-relaxed">
                           {item.description}
                         </p>
                       )}
                       
                       {/* Actions */}
-                      <div className="flex items-center justify-between mt-auto pt-2 border-t border-neutral-100">
-                        <span className="text-[9px] text-neutral-400">ID: {item.id}</span>
+                      <div className="flex items-center justify-between mt-auto pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                        <span className="text-[9px] text-neutral-400 dark:text-neutral-500">ID: {item.id}</span>
                         <div className="flex gap-1.5">
                           <button
                             onClick={() => openItemModal(item)}
-                            className="w-7 h-7 rounded-full bg-neutral-100 hover:bg-neutral-900 hover:text-white flex items-center justify-center transition-colors"
+                            className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-900 dark:hover:bg-white hover:text-white dark:hover:text-black flex items-center justify-center transition-colors"
                             aria-label="Редагувати товар"
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleItemDelete(item.id)}
-                            className="w-7 h-7 rounded-full bg-neutral-100 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors"
+                            className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors"
                             aria-label="Видалити товар"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -307,9 +322,9 @@ export default function Menu() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {categories.map((category) => {
             return (
-              <div 
-                key={category.id} 
-                className="relative bg-white border-2 border-neutral-200 rounded-2xl overflow-hidden hover:border-neutral-400 hover:shadow-2xl transition-all duration-300 group"
+              <div
+                key={category.id}
+                className="relative bg-white dark:bg-neutral-900 border-2 border-neutral-200 dark:border-neutral-700 rounded-2xl overflow-hidden hover:border-neutral-400 dark:hover:border-neutral-500 hover:shadow-2xl transition-all duration-300 group"
               >
                 {/* Top accent bar */}
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900"></div>
@@ -317,32 +332,32 @@ export default function Menu() {
                 <div className="p-6">
                   {/* Icon with background pattern */}
                   <div className="relative mb-5">
-                    <div className="absolute inset-0 bg-neutral-100 rounded-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                    <div className="absolute inset-0 bg-neutral-100 dark:bg-neutral-800 rounded-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
                     <div className="relative w-20 h-20 mx-auto bg-gradient-to-br from-neutral-900 to-neutral-700 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                       <Shirt className="w-10 h-10 text-white" strokeWidth={2} />
                     </div>
                   </div>
                   
                   {/* Category name */}
-                  <h3 className="text-lg font-black text-neutral-900 mb-3 text-center tracking-tight uppercase">
+                  <h3 className="text-lg font-black text-neutral-900 dark:text-white mb-3 text-center tracking-tight uppercase">
                     {category.name}
                   </h3>
                   
                   {/* Product count */}
                   
                   {/* Action buttons */}
-                  <div className="flex gap-2 pt-4 border-t border-neutral-100">
+                  <div className="flex gap-2 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                     <button
                       onClick={() => openCategoryModal(category)}
-                      className="flex-1 py-2.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors font-medium text-sm"
+                      className="flex-1 py-2.5 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors font-medium text-sm"
                       aria-label="Редагувати категорію"
                     >
                       <Edit className="w-4 h-4 mx-auto" />
                     </button>
-                    <div className="w-px bg-neutral-200"></div>
+                    <div className="w-px bg-neutral-200 dark:bg-neutral-700"></div>
                     <button
                       onClick={() => handleCategoryDelete(category.id)}
-                      className="flex-1 py-2.5 text-neutral-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium text-sm"
+                      className="flex-1 py-2.5 text-neutral-600 dark:text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-medium text-sm"
                       aria-label="Видалити категорію"
                     >
                       <Trash2 className="w-4 h-4 mx-auto" />
@@ -356,9 +371,9 @@ export default function Menu() {
       )}
 
       {categories.length === 0 && activeTab === 'categories' && (
-        <div className="text-center py-12 bg-white rounded-xl">
-          <FolderOpen className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
-          <p className="text-neutral-500">Поки що немає категорій. Додайте першу категорію!</p>
+        <div className="text-center py-12 bg-white dark:bg-neutral-900 rounded-xl">
+          <FolderOpen className="w-16 h-16 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
+          <p className="text-neutral-500 dark:text-neutral-400">Поки що немає категорій. Додайте першу категорію!</p>
         </div>
       )}
 
@@ -367,7 +382,7 @@ export default function Menu() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 py-8">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
-            <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden border-2 border-neutral-200 max-h-[90vh] overflow-y-auto">
+            <div className="relative bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden border-2 border-neutral-200 dark:border-neutral-700 max-h-[90vh] overflow-y-auto">
               {/* Header with gradient accent */}
               <div className="relative bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 px-8 py-6 sticky top-0 z-10">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-white/20"></div>
@@ -384,27 +399,27 @@ export default function Menu() {
               
               <form onSubmit={handleItemSubmit} className="p-8 space-y-5">
                 <div>
-                  <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-3">
+                  <label className="block text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-3">
                     Назва товару
                   </label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={formData.name} 
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-                    className="w-full px-4 py-3.5 bg-neutral-50 border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all font-medium text-neutral-900 placeholder:text-neutral-400" 
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3.5 bg-neutral-50 dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-neutral-900 dark:focus:border-white transition-all font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
                     placeholder="Введіть назву товару"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-3">
+                  <label className="block text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-3">
                     Опис
                   </label>
-                  <textarea 
-                    value={formData.description} 
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
-                    className="w-full px-4 py-3.5 bg-neutral-50 border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all font-medium text-neutral-900 placeholder:text-neutral-400 resize-none" 
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-4 py-3.5 bg-neutral-50 dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-neutral-900 dark:focus:border-white transition-all font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500 resize-none"
                     rows={4}
                     placeholder="Додайте опис товару..."
                   />
@@ -412,13 +427,13 @@ export default function Menu() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-3">
+                    <label className="block text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-3">
                       Категорія
                     </label>
-                    <select 
-                      value={formData.category_id || ''} 
-                      onChange={(e) => setFormData({ ...formData, category_id: e.target.value ? Number(e.target.value) : null })} 
-                      className="w-full px-4 py-3.5 bg-neutral-50 border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all font-medium text-neutral-900"
+                    <select
+                      value={formData.category_id || ''}
+                      onChange={(e) => setFormData({ ...formData, category_id: e.target.value ? Number(e.target.value) : null })}
+                      className="w-full px-4 py-3.5 bg-neutral-50 dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-neutral-900 dark:focus:border-white transition-all font-medium text-neutral-900 dark:text-white"
                     >
                       <option value="">Без категорії</option>
                       {categories.map(cat => (
@@ -428,38 +443,68 @@ export default function Menu() {
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-3">
+                    <label className="block text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-3">
                       Ціна (в копійках)
                     </label>
-                    <input 
-                      type="number" 
-                      required 
-                      value={formData.price} 
-                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })} 
-                      className="w-full px-4 py-3.5 bg-neutral-50 border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all font-medium text-neutral-900 placeholder:text-neutral-400" 
+                    <input
+                      type="number"
+                      required
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                      className="w-full px-4 py-3.5 bg-neutral-50 dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-neutral-900 dark:focus:border-white transition-all font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
                       placeholder="0"
                     />
                   </div>
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-3">
+                      Стара ціна (в копійках)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.old_price || ''}
+                      onChange={(e) => setFormData({ ...formData, old_price: e.target.value ? Number(e.target.value) : null })}
+                      className="w-full px-4 py-3.5 bg-neutral-50 dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-neutral-900 dark:focus:border-white transition-all font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
+                      placeholder="Залиште порожнім якщо немає знижки"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-3">
+                      Бейдж
+                    </label>
+                    <select
+                      value={formData.badge || ''}
+                      onChange={(e) => setFormData({ ...formData, badge: e.target.value || null })}
+                      className="w-full px-4 py-3.5 bg-neutral-50 dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-neutral-900 dark:focus:border-white transition-all font-medium text-neutral-900 dark:text-white"
+                    >
+                      <option value="">Без бейджу</option>
+                      <option value="sale">Sale</option>
+                      <option value="new">New</option>
+                    </select>
+                  </div>
+                </div>
                 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-3">
+                  <label className="block text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-3">
                     URL зображення
                   </label>
-                  <input 
-                    type="text" 
-                    value={formData.image_url} 
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })} 
-                    className="w-full px-4 py-3.5 bg-neutral-50 border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all font-medium text-neutral-900 placeholder:text-neutral-400 font-mono text-sm" 
+                  <input
+                    type="text"
+                    value={formData.image_url}
+                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                    className="w-full px-4 py-3.5 bg-neutral-50 dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-neutral-900 dark:focus:border-white transition-all font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500 font-mono text-sm"
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>
                 
-                <div className="flex gap-3 pt-4 border-t border-neutral-100">
+                <div className="flex gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="flex-1 py-3.5 bg-neutral-100 text-neutral-700 rounded-xl hover:bg-neutral-200 transition-colors font-semibold text-sm"
+                    className="flex-1 py-3.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors font-semibold text-sm"
                   >
                     Скасувати
                   </button>
@@ -481,7 +526,7 @@ export default function Menu() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setCategoryModalOpen(false)} />
-            <div className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border-2 border-neutral-200">
+            <div className="relative bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border-2 border-neutral-200 dark:border-neutral-700">
               {/* Header with gradient accent */}
               <div className="relative bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 px-8 py-6">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-white/20"></div>
@@ -498,11 +543,11 @@ export default function Menu() {
               
               <form onSubmit={handleCategorySubmit} className="p-8">
                 <div className="mb-6">
-                  <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-3">
+                  <label className="block text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-3">
                     Назва категорії
                   </label>
                   <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500">
                       <Shirt className="w-5 h-5" />
                     </div>
                     <input
@@ -510,18 +555,18 @@ export default function Menu() {
                       required
                       value={categoryFormData.name}
                       onChange={(e) => setCategoryFormData({ name: e.target.value })}
-                      className="w-full pl-12 pr-4 py-4 bg-neutral-50 border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all font-medium text-neutral-900 placeholder:text-neutral-400"
+                      className="w-full pl-12 pr-4 py-4 bg-neutral-50 dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-neutral-900 dark:focus:border-white transition-all font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
                       placeholder="Наприклад: Polo Shirts, Sweaters..."
                     />
                   </div>
-                  <p className="mt-2 text-xs text-neutral-500">Введіть унікальну назву для нової категорії товарів</p>
+                  <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">Введіть унікальну назву для нової категорії товарів</p>
                 </div>
                 
-                <div className="flex gap-3 pt-4 border-t border-neutral-100">
+                <div className="flex gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <button
                     type="button"
                     onClick={() => setCategoryModalOpen(false)}
-                    className="flex-1 py-3.5 bg-neutral-100 text-neutral-700 rounded-xl hover:bg-neutral-200 transition-colors font-semibold text-sm"
+                    className="flex-1 py-3.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors font-semibold text-sm"
                   >
                     Скасувати
                   </button>

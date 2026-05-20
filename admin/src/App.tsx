@@ -3,6 +3,10 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Menu from './pages/Menu';
+import PromoCodes from './pages/PromoCodes';
+import Analytics from './pages/Analytics';
+import Reviews from './pages/Reviews';
+import NotFound from './pages/NotFound';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('token');
@@ -49,6 +53,37 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/promo"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <PromoCodes />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Analytics />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/reviews"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Reviews />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

@@ -10,6 +10,7 @@ class OrderCreate(BaseModel):
     """Order creation request schema."""
     address: str = Field(..., min_length=5, max_length=200, description="Delivery address")
     delivery_time: Optional[str] = Field(None, description="Desired delivery time in ISO format")
+    promo_code: Optional[str] = Field(None, max_length=50, description="Optional promo code for discount")
 
 
 class OrderResponse(BaseModel):

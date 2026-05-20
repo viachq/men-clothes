@@ -17,7 +17,7 @@ export default function Login() {
 
     try {
       const response = await api.post('/auth/login', { username, password });
-      
+
       // Перевірка ролі - тільки адміністратори можуть входити
       const userRole = response.data.user?.role;
       if (userRole === 'client') {
@@ -25,13 +25,13 @@ export default function Login() {
         setLoading(false);
         return;
       }
-      
+
       if (userRole !== 'system_admin' && userRole !== 'manager') {
         setError('Access denied. Insufficient permissions.');
         setLoading(false);
         return;
       }
-      
+
       localStorage.setItem('token', response.data.access_token);
       localStorage.setItem('user_role', userRole);
       navigate('/dashboard');
@@ -43,9 +43,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden">
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
           {/* Header with gradient */}
           <div className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 px-8 py-10 text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur-sm rounded-2xl mb-4 border border-white/20">
@@ -57,15 +57,15 @@ export default function Login() {
 
           <div className="p-8">
             {error && (
-              <div className="mb-6 p-4 bg-neutral-50 border-l-4 border-neutral-900 rounded-lg flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-neutral-900 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-neutral-800 font-medium">{error}</p>
+              <div className="mb-6 p-4 bg-neutral-50 dark:bg-neutral-800 border-l-4 border-neutral-900 dark:border-neutral-400 rounded-lg flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-neutral-900 dark:text-neutral-300 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-neutral-800 dark:text-neutral-200 font-medium">{error}</p>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label htmlFor="username" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                <label htmlFor="username" className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-2">
                   Username
                 </label>
                 <input
@@ -74,13 +74,13 @@ export default function Login() {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-neutral-50 border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all font-medium text-neutral-900 placeholder:text-neutral-400"
+                  className="w-full px-4 py-3.5 bg-neutral-50 dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-400 focus:border-neutral-900 dark:focus:border-neutral-400 transition-all font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
                   placeholder="Enter your username"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                <label htmlFor="password" className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-2">
                   Password
                 </label>
                 <input
@@ -89,7 +89,7 @@ export default function Login() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-neutral-50 border-2 border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all font-medium text-neutral-900 placeholder:text-neutral-400"
+                  className="w-full px-4 py-3.5 bg-neutral-50 dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-400 focus:border-neutral-900 dark:focus:border-neutral-400 transition-all font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
                   placeholder="Enter your password"
                 />
               </div>
@@ -97,7 +97,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-neutral-900 to-neutral-800 text-white py-4 px-6 rounded-xl font-bold text-sm uppercase tracking-wider hover:from-neutral-800 hover:to-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+                className="w-full bg-gradient-to-r from-neutral-900 to-neutral-800 text-white py-4 px-6 rounded-xl font-bold text-sm uppercase tracking-wider hover:from-neutral-800 hover:to-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-400 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
@@ -108,4 +108,3 @@ export default function Login() {
     </div>
   );
 }
-

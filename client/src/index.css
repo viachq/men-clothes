@@ -6,7 +6,11 @@
   html {
     overflow-x: hidden;
   }
-  
+
+  html.dark {
+    color-scheme: dark;
+  }
+
   body {
     margin: 0;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -18,7 +22,7 @@
     overflow-x: hidden;
     width: 100%;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     letter-spacing: -0.025em;
     font-weight: 700;
@@ -57,7 +61,7 @@
 
   /* Skeleton loader стилі */
   .skeleton {
-    @apply animate-pulse bg-gray-200 rounded;
+    @apply animate-pulse bg-gray-200 dark:bg-neutral-700 rounded;
   }
 
   /* Hover lift ефект */
@@ -67,7 +71,7 @@
 
   /* Glassmorphism ефект */
   .glass {
-    @apply bg-white/80 backdrop-blur-lg border border-white/20;
+    @apply bg-white/80 dark:bg-neutral-900/80 backdrop-blur-lg border border-white/20 dark:border-neutral-700/20;
   }
 
   /* Smooth scroll */
@@ -109,6 +113,10 @@
   *:focus-visible {
     outline: 2px solid black;
     outline-offset: 2px;
+  }
+
+  .dark *:focus-visible {
+    outline-color: white;
   }
 
   /* Better button interactions */

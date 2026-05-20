@@ -1,7 +1,3 @@
-"""
-Auth Service - Main FastAPI application with database initialization.
-This service manages only User authentication and authorization.
-"""
 import traceback
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,70 +6,51 @@ from sqlalchemy.orm import Session
 
 from backend.database import Base
 from backend.database.session import engine, SessionLocal
-
-# Import only User model - this service manages only users
 from backend.models.user import User
-
-# Import routers
+from backend.middleware import SecurityHeadersMiddleware, RateLimitMiddleware, AuditLogMiddleware
 from backend.routers import (
     auth_register,
     auth_login,
+    auth_verify,
     users as users_router,
     admin_users as admin_users_router,
 )
 
-# Create FastAPI application
-app = FastAPI(title="Auth Service", version="1.0.0")
+app = FastAPI(title="Auth Service", version="2.0.0")
 
 
 def init_db():
-    """Initialize database tables for auth-service (only users table)."""
     Base.metadata.create_all(bind=engine)
-    print("[OK] Auth service: Database tables created (users)")
+    print("[OK] Auth service: Database tables created")
 
 
 def init_default_users():
-    """Create default users if they don't exist."""
     from backend.core.enums import UserRole
     from backend.core.security import hash_password
 
     db: Session = SessionLocal()
     try:
         default_users = [
-            {
-                "username": "admin",
-                "password": "admin",
-                "role": UserRole.SYSTEM_ADMIN,
-            },
-            {
-                "username": "manager",
-                "password": "manager",
-                "role": UserRole.MANAGER,
-            },
-            {
-                "username": "client",
-                "password": "client",
-                "role": UserRole.CLIENT,
-            }
+            {"username": "admin", "password": "Admin1pass", "role": UserRole.SYSTEM_ADMIN, "name": "Адміністратор"},
+            {"username": "manager", "password": "Manager1", "role": UserRole.MANAGER, "name": "Менеджер"},
+            {"username": "client", "password": "Client1", "role": UserRole.CLIENT, "name": "Клієнт"},
         ]
-
-        for user_data in default_users:
-            existing = db.query(User).filter(User.username == user_data["username"]).first()
-            if existing is None:
+        for ud in default_users:
+            if not db.query(User).filter(User.username == ud["username"]).first():
                 user = User(
-                    username=user_data["username"],
-                    password=hash_password(user_data["password"]),
-                    role=user_data["role"].value
+                    username=ud["username"],
+                    password=hash_password(ud["password"]),
+                    role=ud["role"].value,
+                    name=ud.get("name"),
+                    is_verified=True,
                 )
                 db.add(user)
                 db.commit()
-                db.refresh(user)
-                print(f"[OK] User created: {user_data['username']} (password: {user_data['password']}, role: {user_data['role'].value})")
+                print(f"[OK] User created: {ud['username']} ({ud['role'].value})")
     finally:
         db.close()
 
 
-# CORS middleware - must be added before routers
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -81,47 +58,35 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitMiddleware, requests_per_minute=120)
+app.add_middleware(AuditLogMiddleware)
 
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database on application startup."""
     init_db()
     init_default_users()
     print("[OK] Auth service: Startup complete")
 
-# Include routers (only auth-related routers for auth-service)
-# IMPORTANT: Admin routers must be registered BEFORE public routers
+
 app.include_router(admin_users_router.router)
 app.include_router(auth_register.router)
 app.include_router(auth_login.router)
+app.include_router(auth_verify.router)
 app.include_router(users_router.router)
 
 
-# Health check endpoint
 @app.get("/health")
 def health():
-    """Health check endpoint."""
-    return {
-        "status": "ok",
-        "service": "auth-service",
-        "version": "1.0.0"
-    }
+    return {"status": "ok", "service": "auth-service", "version": "2.0.0"}
 
 
-# Global exception handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """Catch all exceptions and log them."""
-    print("=" * 60)
-    print("ERROR OCCURRED:")
-    print(f"Request: {request.method} {request.url}")
-    print(f"Error: {type(exc).__name__}: {str(exc)}")
-    print("\nTraceback:")
+    print(f"ERROR: {request.method} {request.url} -> {type(exc).__name__}: {exc}")
     traceback.print_exc()
-    print("=" * 60)
-
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"error": str(exc), "type": type(exc).__name__}
+        content={"detail": "Internal server error"},
     )

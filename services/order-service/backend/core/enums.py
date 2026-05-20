@@ -16,6 +16,7 @@ class OrderStatus(enum.Enum):
     PENDING = "pending"
     DELIVERING = "delivering"
     DELIVERED = "delivered"
+    CANCELLED = "cancelled"
 
 
 class PaymentStatus(enum.Enum):

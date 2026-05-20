@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models.order import Order
 from backend.deps import require_roles
-from backend.core.enums import UserRole
+from backend.core.enums import UserRole, OrderStatus
 
 
 router = APIRouter(prefix="/admin/orders", tags=["admin:orders"])
@@ -90,12 +90,19 @@ def get_order_details(
 
 @router.put("/{order_id}/status")
 def set_status(order_id: int, status: str, db: Session = Depends(get_db), _: object = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.MANAGER))):
+    """Update order status. Allowed values: pending, delivering, delivered, cancelled."""
+    allowed = [s.value for s in OrderStatus]
+    if status not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid status. Allowed: {allowed}",
+        )
     o = db.query(Order).filter(Order.id == order_id).first()
     if not o:
         raise HTTPException(status_code=404, detail="Order not found")
     o.status = status
     db.commit()
-    return {"message": "Status updated"}
+    return {"message": "Status updated", "id": o.id, "status": o.status}
 
 
 

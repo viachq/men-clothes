@@ -13,10 +13,14 @@ __pycache__/
 *$py.class
 *.pyc
 
-# SQLite temporary files (databases themselves are tracked)
+# SQLite databases and temporary files
+*.db
 *.db-shm
 *.db-wal
 *.db-journal
+
+# Build outputs
+dist/
 
 # Environment variables
 .env

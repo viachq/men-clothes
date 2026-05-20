@@ -100,101 +100,102 @@ class TestGetCurrentUser:
 
 
 class TestUpdateMyProfile:
-    """Tests for PUT /users/me endpoint."""
+    """Tests for PUT /users/me endpoint (JSON body: name, email, phone, old_password, password)."""
 
-    def test_update_username_success(self, client, test_user, auth_headers, test_db):
-        """Test updating username."""
-        new_username = "newusername"
+    def test_update_name_success(self, client, test_user, auth_headers, test_db):
+        """Test updating display name."""
         response = client.put(
             "/users/me",
             headers=auth_headers,
-            params={"username": new_username}
+            json={"name": "Новий Користувач"}
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["username"] == new_username
+        assert data["name"] == "Новий Користувач"
         assert data["id"] == test_user.id
+        assert data["username"] == test_user.username  # username is immutable
 
-        # Verify in database
         test_db.refresh(test_user)
-        assert test_user.username == new_username
+        assert test_user.name == "Новий Користувач"
+
+    def test_update_contact_info_success(self, client, test_user, auth_headers, test_db):
+        """Test updating email and phone."""
+        response = client.put(
+            "/users/me",
+            headers=auth_headers,
+            json={"email": "new@example.com", "phone": "+380501234567"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["email"] == "new@example.com"
+        assert data["phone"] == "+380501234567"
+
+        test_db.refresh(test_user)
+        assert test_user.email == "new@example.com"
+        assert test_user.phone == "+380501234567"
 
     def test_update_password_success(self, client, test_user, auth_headers, test_db):
-        """Test updating password."""
-        new_password = "newpassword123"
+        """Test updating password (requires correct old_password)."""
         response = client.put(
             "/users/me",
             headers=auth_headers,
-            params={"password": new_password}
+            json={"old_password": "testpass123", "password": "newpassword123"}
         )
         assert response.status_code == 200
         data = response.json()
         assert data["id"] == test_user.id
 
-        # Verify password was hashed and updated
         test_db.refresh(test_user)
         from backend.core.security import verify_password
-        assert verify_password(new_password, test_user.password) is True
+        assert verify_password("newpassword123", test_user.password) is True
 
-    def test_update_username_and_password(self, client, test_user, auth_headers, test_db):
-        """Test updating both username and password."""
-        new_username = "updateduser"
-        new_password = "updatedpass123"
+    def test_update_password_wrong_old_password(self, client, test_user, auth_headers):
+        """Test that changing password with a wrong old_password is rejected."""
         response = client.put(
             "/users/me",
             headers=auth_headers,
-            params={
-                "username": new_username,
-                "password": new_password
-            }
+            json={"old_password": "wrongold", "password": "newpassword123"}
         )
-        assert response.status_code == 200
-        data = response.json()
-        assert data["username"] == new_username
+        assert response.status_code == 400
+        assert "detail" in response.json()
 
-        # Verify both were updated
-        test_db.refresh(test_user)
-        assert test_user.username == new_username
-        from backend.core.security import verify_password
-        assert verify_password(new_password, test_user.password) is True
-
-    def test_update_username_already_taken(self, client, test_user, auth_headers, test_db):
-        """Test updating username to one that's already taken."""
-        # Create another user
+    def test_update_email_already_taken(self, client, test_user, auth_headers, test_db):
+        """Test updating email to one that's already registered to another user."""
         from backend.models.user import User
         from backend.core.security import hash_password
         other_user = User(
             username="otheruser",
             password=hash_password("pass123"),
-            role="client"
+            role="client",
+            email="taken@example.com",
+            is_verified=True,
         )
         test_db.add(other_user)
         test_db.commit()
 
-        # Try to update to taken username
         response = client.put(
             "/users/me",
             headers=auth_headers,
-            params={"username": "otheruser"}
+            json={"email": "taken@example.com"}
         )
         assert response.status_code == 400
         data = response.json()
         assert "detail" in data
-        assert "taken" in data["detail"].lower()
+        assert "email" in data["detail"].lower()
 
     def test_update_no_token(self, client):
         """Test updating profile without token."""
         response = client.put(
             "/users/me",
-            params={"username": "newusername"}
+            json={"name": "Anything"}
         )
         assert response.status_code == 401
 
     def test_update_no_changes(self, client, test_user, auth_headers):
-        """Test updating profile without any changes."""
+        """Test updating profile with an empty body (no changes) returns 200."""
         response = client.put(
             "/users/me",
-            headers=auth_headers
+            headers=auth_headers,
+            json={}
         )
-        # Should still return 200 as no validation errors
         assert response.status_code == 200

@@ -14,6 +14,8 @@ from backend.database.session import engine, SessionLocal
 # Import only models managed by this service
 from backend.models.category import Category
 from backend.models.menu_item import MenuItem
+from backend.models.review import ProductReview
+from backend.models.product_variant import ProductVariant
 
 # Import routers
 from backend.routers import (
@@ -21,7 +23,9 @@ from backend.routers import (
     admin_categories,
     menu,
     admin_menu,
+    reviews,
 )
+from backend.routers import variants as variants_router
 
 # Create FastAPI application
 app = FastAPI(
@@ -34,7 +38,7 @@ app = FastAPI(
 def init_db():
     """Initialize database tables for catalog-service (categories, products)."""
     Base.metadata.create_all(bind=engine)
-    print("[OK] Catalog service: Database tables created (categories, menu_items)")
+    print("[OK] Catalog service: Database tables created (categories, menu_items, product_reviews)")
 
 
 def init_default_data():
@@ -130,6 +134,31 @@ def init_default_data():
                     db.add(menu_item)
                     db.commit()
                     print(f"[OK] Product created: {item_data['name']}")
+
+        # Create default variants (sizes) for all products
+        import random
+        all_products = db.query(MenuItem).all()
+        sizes = ["S", "M", "L", "XL"]
+        variants_created = 0
+        for product in all_products:
+            existing_variants = (
+                db.query(ProductVariant)
+                .filter(ProductVariant.menu_item_id == product.id)
+                .first()
+            )
+            if existing_variants is None:
+                for size in sizes:
+                    stock = random.randint(10, 50)
+                    variant = ProductVariant(
+                        menu_item_id=product.id,
+                        size=size,
+                        stock=stock,
+                    )
+                    db.add(variant)
+                    variants_created += 1
+                db.commit()
+        if variants_created:
+            print(f"[OK] Created {variants_created} product variants (4 sizes x {len(all_products)} products)")
     finally:
         db.close()
 
@@ -158,6 +187,8 @@ app.include_router(admin_categories.router)
 app.include_router(admin_menu.router)
 app.include_router(categories.router)
 app.include_router(menu.router)
+app.include_router(reviews.router)
+app.include_router(variants_router.router)
 
 
 # Health check endpoint

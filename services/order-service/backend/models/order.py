@@ -23,3 +23,7 @@ class Order(Base):
     payment_method = Column(String, default=PaymentMethod.CARD.value, nullable=False)
     total_price = Column(Integer, nullable=False, default=0)  # in cents/kopiyky
     delivery_time = Column(DateTime, nullable=True)
+
+    # Promo code
+    promo_code = Column(String(50), nullable=True)
+    discount = Column(Integer, default=0, nullable=False)  # in cents/kopiyky

@@ -15,6 +15,7 @@ from backend.models.order import Order
 from backend.models.order_item import OrderItem
 from backend.models.payment import Payment
 from backend.models.cart import Cart, CartItem
+from backend.models.promo_code import PromoCode
 from backend.core.enums import OrderStatus, PaymentMethod
 
 # Import routers
@@ -24,6 +25,7 @@ from backend.routers import (
     admin_orders,
     payments,
     admin_stats,
+    promocodes,
 )
 
 # Create FastAPI application
@@ -37,7 +39,7 @@ app = FastAPI(
 def init_db():
     """Initialize database tables for order-service (orders, order_items, payments, carts, cart_items)."""
     Base.metadata.create_all(bind=engine)
-    print("[OK] Order service: Database tables created (orders, order_items, payments, carts, cart_items)")
+    print("[OK] Order service: Database tables created (orders, order_items, payments, carts, cart_items, promo_codes)")
 
 
 def init_default_data():
@@ -203,6 +205,7 @@ async def startup_event():
 # to avoid path conflicts (e.g., /admin/orders/{id} vs /orders/{id})
 app.include_router(admin_orders.router)
 app.include_router(admin_stats.router)
+app.include_router(promocodes.router)
 app.include_router(cart.router)
 app.include_router(orders.router)
 app.include_router(payments.router)
