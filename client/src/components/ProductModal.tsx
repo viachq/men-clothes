@@ -131,7 +131,16 @@ export default function ProductModal({ product, onClose, onAddToCart }: ProductM
               </span>
             )}
             {product.image_url ? (
-              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center"><span class="text-8xl">👔</span></div>';
+                }}
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-8xl text-neutral-200 dark:text-neutral-600">
                 👔

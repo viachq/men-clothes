@@ -10,7 +10,10 @@ import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
+import About from './pages/About';
+import Contacts from './pages/Contacts';
 import ProductModal from './components/ProductModal';
+import Footer from './components/Footer';
 
 function Header() {
   const navigate = useNavigate();
@@ -177,6 +180,8 @@ function App() {
             <Route path="/checkout" element={<Cart />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contacts" element={<Contacts />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
@@ -184,14 +189,7 @@ function App() {
         {/* Липкий кошик для мобільних (тільки на головній сторінці) */}
         <FloatingCart />
 
-        {/* Footer - Minimal Nike Style */}
-        <footer className="bg-white dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800 mt-20 md:mt-24">
-          <div className="max-w-[1920px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20 py-6 md:py-8">
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center uppercase tracking-wide">
-              © 2025 Men's Clothes. Всі права захищені.
-            </p>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </BrowserRouter>
   );
@@ -208,6 +206,16 @@ function HomePage() {
   const [selectedProduct, setSelectedProduct] = useState<MenuItem | null>(null);
   const [productRatings, setProductRatings] = useState<Record<number, { avg: number; count: number }>>({});
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, debouncedSearchQuery, sortBy]);
 
   useEffect(() => {
     fetchCategories();
@@ -307,6 +315,11 @@ function HomePage() {
   };
 
   const filteredItems = getFilteredAndSortedItems();
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  const paginatedItems = filteredItems.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
   // Featured section shows only first item if items exist and not loading
 
   return (
@@ -444,10 +457,11 @@ function HomePage() {
             )}
           </div>
             ) : !loading && filteredItems.length > 0 ? (
-              <div 
+              <>
+              <div
                 className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-5 md:gap-6 lg:gap-8"
               >
-                {filteredItems.map((item, index) => (
+                {paginatedItems.map((item, index) => (
                   <div
                     key={item.id}
                     className="group flex flex-col cursor-pointer"
@@ -470,6 +484,11 @@ function HomePage() {
                       alt={item.name}
                             className="w-full h-full object-cover transition-transform duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-115"
                             loading="lazy"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center"><span class="text-6xl">👔</span></div>';
+                            }}
                           />
                           {/* Premium Overlay */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -535,6 +554,38 @@ function HomePage() {
                   </div>
                 ))}
                 </div>
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-12">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  >
+                    ←
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-10 h-10 text-sm font-bold transition-all ${
+                        currentPage === page
+                          ? 'bg-black dark:bg-white text-white dark:text-black'
+                          : 'text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  >
+                    →
+                  </button>
+                </div>
+              )}
+              </>
             ) : (
               <div className="text-center py-20">
                 <p className="text-neutral-600 dark:text-neutral-400">Немає інших товарів для відображення</p>
